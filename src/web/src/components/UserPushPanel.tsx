@@ -103,7 +103,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        notify(data.error ?? "保存失败");
+        notify(data.error ?? "Save failed");
         return false;
       }
       await load();
@@ -115,8 +115,8 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
   const s = (payload?.settings ?? {}) as Record<string, unknown>;
   const cfg = payload?.config;
 
-  if (loading) return <div className="panel p-6 text-[13px] text-ink-500">加载个人推送配置中…</div>;
-  if (!payload || !cfg) return <div className="panel p-6 text-[13px] text-alert">无法读取个人推送配置</div>;
+  if (loading) return <div className="panel p-6 text-[13px] text-ink-500">Loading personal push settings…</div>;
+  if (!payload || !cfg) return <div className="panel p-6 text-[13px] text-alert">Failed to load personal push settings</div>;
 
   return (
     <div className="space-y-4">
@@ -125,15 +125,15 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
       <div className="panel flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
           <div className="flex items-center gap-2 text-[14px] font-semibold text-ink-950">
-            <Bot size={15} className="text-accent" /> 我的 Telegram 推送
+            <Bot size={15} className="text-accent" /> Me Telegram push
           </div>
           <p className="mt-0.5 text-[12px] leading-relaxed text-ink-500">
-            只推给你自己：用自己的 Bot Token 与 Chat ID，规则、去重、限流都独立计算，不会影响站长的全局推送。
+            Pushes only to you: your own Bot Token and Chat ID, with independent rules, dedupe, and rate limits — it never touches the admin's global pushes. 
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`text-[11.5px] font-medium ${cfg.enabled ? "text-deal" : "text-ink-500"}`}>
-            {cfg.enabled ? "已开启" : "未开启"}
+            {cfg.enabled ? "On" : "Off"}
           </span>
           <button
             type="button"
@@ -142,7 +142,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors " +
               (cfg.enabled ? "bg-brand" : "bg-ink-300")
             }
-            title={cfg.enabled ? "点击关闭个人推送" : "点击开启个人推送"}
+            title={cfg.enabled ? "Click to disable personal push" : "Click to enable personal push"}
           >
             <span
               className={
@@ -156,15 +156,15 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
 
       {cfg.lastError && (
         <div className="panel border-alert-border bg-alert-subtle p-3.5 text-[12px] text-alert">
-          最近一次失败：{cfg.lastError}
-          {cfg.consecutiveFails > 0 ? `（连续失败 ${cfg.consecutiveFails} 次，达 3 次会自动停用）` : ""}
+          Last failure: Failed: {cfg.lastError}
+          {cfg.consecutiveFails > 0 ? `(${cfg.consecutiveFails} consecutive failures; auto-disabled at 3)` : ""}
         </div>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="panel space-y-3 p-5">
           <div className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950">
-            <KeyRound size={14} className="text-accent" /> Bot 凭据
+            <KeyRound size={14} className="text-accent" /> Bot credentials
             <span className="ml-auto rounded-full bg-canvas-subtle px-2 py-0.5 text-[10.5px] font-medium text-ink-600">
               {cfg.settings.deliverVia === "webhook" ? "Webhook" : "Telegram"}
             </span>
@@ -189,23 +189,23 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
           {cfg.settings.deliverVia === "webhook" ? (
             <>
               <label className="block">
-                <span className="text-[12px] font-medium text-ink-700">Webhook 地址</span>
+                <span className="text-[12px] font-medium text-ink-700">Webhook URL</span>
                 <input
                   defaultValue={String(cfg.settings.webhookUrl ?? "")}
                   onBlur={(e) => void save({ webhookUrl: e.target.value.trim() })}
-                  placeholder="http://127.0.0.1:3000/send_private_msg 或 https://api.day.app/xxx"
+                  placeholder="http://127.0.0.1:3000/send_private_msg or https://api.day.app/xxx"
                   className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-950 outline-none focus:border-accent"
                 />
                 <span className="mt-1 block text-[11px] text-ink-500">
-                  收到 POST JSON：source / text / sentAt 三个字段。QQ 用 NapCat、Lagrange 的 HTTP 接口即可（官方 Bot 不支持主动推送）。
+                  Receives POST JSON with source / text / sentAt. For QQ use NapCat or Lagrange's HTTP API (the official bot can't push proactively). 
                 </span>
               </label>
               <label className="block">
-                <span className="text-[12px] font-medium text-ink-700">校验密钥（可选）</span>
+                <span className="text-[12px] font-medium text-ink-700">Verification secret (optional)</span>
                 <input
                   defaultValue={String(cfg.settings.webhookSecret ?? "")}
                   onBlur={(e) => void save({ webhookSecret: e.target.value.trim() })}
-                  placeholder="会以 X-Radar-Secret 头发送"
+                  placeholder="Sent as the X-Radar-Secret header"
                   className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-950 outline-none focus:border-accent"
                 />
               </label>
@@ -216,24 +216,24 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
             <input
               value={tokenInput}
               onChange={(e) => setTokenInput(e.target.value)}
-              placeholder={cfg.hasToken ? `已保存：${cfg.botTokenMask}` : "123456789:AA..."}
+              placeholder={cfg.hasToken ? `Saved: ${cfg.botTokenMask}` : "123456789:AA..."}
               className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-950 outline-none focus:border-accent"
             />
             <span className="mt-1 block text-[11px] text-ink-500">
-              在 @BotFather 建 Bot 拿 Token；服务端加密存储，接口只回显打码值。
+              Create a bot at @BotFather to get the token; it is stored encrypted server-side and the API only returns a masked value. 
             </span>
           </label>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={async () => {
-                if (!tokenInput.trim()) return notify("先粘贴 Bot Token");
+                if (!tokenInput.trim()) return notify("Paste a Bot Token first");
                 setBusy("token");
                 try {
                   const ok = await save({ botToken: tokenInput.trim() });
                   if (ok) {
                     setTokenInput("");
-                    notify("Token 已保存");
+                    notify("Token Saved");
                   }
                 } finally {
                   setBusy(null);
@@ -243,7 +243,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               className="inline-flex items-center gap-1.5 rounded-lg bg-ink-950 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-brand-hover disabled:opacity-60"
             >
               {busy === "token" ? <Loader2 size={12} className="animate-spin" /> : null}
-              保存 Token
+              Save Token
             </button>
             <button
               type="button"
@@ -256,10 +256,10 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                     body: JSON.stringify({ botToken: tokenInput.trim() || undefined }),
                   });
                   const data = (await res.json().catch(() => ({}))) as { error?: string; chats?: typeof detected };
-                  if (!res.ok) notify(data.error ?? "探测失败");
+                  if (!res.ok) notify(data.error ?? "Probe failed");
                   else {
                     setDetected(data.chats ?? []);
-                    notify((data.chats?.length ?? 0) ? `探测到 ${data.chats!.length} 个会话` : "没探测到会话，先给 Bot 发一句 /start");
+                    notify((data.chats?.length ?? 0) ? `Detected ${data.chats!.length} chats` : "No chats detected — send /start to the bot first");
                   }
                 } finally {
                   setBusy(null);
@@ -269,7 +269,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-60"
             >
               {busy === "detect" ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-              探测 Chat ID
+              Detect Chat ID
             </button>
             {cfg.hasToken && (
               <button
@@ -277,14 +277,14 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                 onClick={() => void save({ clearToken: true })}
                 className="rounded-lg border border-ink-200 px-3 py-1.5 text-[12px] font-medium text-alert hover:bg-ink-100"
               >
-                清除 Token
+                Clear token
               </button>
             )}
           </div>
 
           {detected.length > 0 && (
             <div className="rounded-lg border border-ink-200 bg-surface-hover p-2.5">
-              <div className="mb-1.5 text-[11.5px] font-medium text-ink-700">点击填入 Chat ID</div>
+              <div className="mb-1.5 text-[11.5px] font-medium text-ink-700">Click to fill Chat ID</div>
               <div className="flex flex-wrap gap-1.5">
                 {detected.map((c) => (
                   <button
@@ -306,18 +306,18 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               <input
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="你的私聊或频道 ID"
+                placeholder="Your private chat or channel ID"
                 className="w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-950 outline-none focus:border-accent"
               />
               <button
                 type="button"
                 onClick={async () => {
                   const ok = await save({ chatId: chatInput.trim() });
-                  if (ok) notify("Chat ID 已保存");
+                  if (ok) notify("Chat ID saved");
                 }}
                 className="shrink-0 rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100"
               >
-                保存
+                Save
               </button>
             </div>
           </label>
@@ -330,7 +330,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                 try {
                   const res = await fetch("/api/me/push/test", { method: "POST" });
                   const data = (await res.json().catch(() => ({}))) as { error?: string };
-                  notify(res.ok ? "测试消息已发出" : (data.error ?? "发送失败"));
+                  notify(res.ok ? "Test message sent" : (data.error ?? "Send failed"));
                 } finally {
                   setBusy(null);
                 }
@@ -338,7 +338,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               disabled={busy !== null || !cfg.hasToken || !cfg.chatId}
               className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50"
             >
-              {busy === "test" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} 发测试消息
+              {busy === "test" ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />} send test message
             </button>
             <button
               type="button"
@@ -347,7 +347,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                 try {
                   const res = await fetch("/api/me/push/flush", { method: "POST" });
                   const data = (await res.json().catch(() => ({}))) as { sent?: number; queued?: number; error?: string };
-                  notify(res.ok ? `已发 ${data.sent ?? 0} 条，队列剩 ${data.queued ?? 0}` : (data.error ?? "发送失败"));
+                  notify(res.ok ? `Sent ${data.sent ?? 0}, ${data.queued ?? 0} queued` : (data.error ?? "Send failed"));
                   await load();
                 } finally {
                   setBusy(null);
@@ -356,18 +356,18 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               disabled={busy !== null}
               className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50"
             >
-              {busy === "flush" ? <Loader2 size={12} className="animate-spin" /> : <ListOrdered size={12} />} 立即发攒批
+              {busy === "flush" ? <Loader2 size={12} className="animate-spin" /> : <ListOrdered size={12} />} send batch now
             </button>
           </div>
         </section>
 
         <section className="panel space-y-3 p-5">
           <div className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950">
-            <Clock size={14} className="text-accent" /> 触发阈值与频率
+            <Clock size={14} className="text-accent" /> trigger thresholds & rate
           </div>
           <div className="grid grid-cols-2 gap-2">
             <label className="block">
-              <span className="text-[12px] text-ink-700">立即单发阈值</span>
+              <span className="text-[12px] text-ink-700">Instant threshold</span>
               <input
                 type="number"
                 min={0}
@@ -378,7 +378,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               />
             </label>
             <label className="block">
-              <span className="text-[12px] text-ink-700">攒批阈值</span>
+              <span className="text-[12px] text-ink-700">Batch threshold</span>
               <input
                 type="number"
                 min={0}
@@ -390,7 +390,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
             </label>
           </div>
           <label className="block">
-            <span className="text-[12px] text-ink-700">每小时推送上限</span>
+            <span className="text-[12px] text-ink-700">Hourly push limit</span>
             <input
               type="number"
               min={1}
@@ -399,27 +399,27 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               onBlur={(e) => void save({ maxPerHour: Number(e.target.value) })}
               className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 text-[12.5px] text-ink-950 outline-none focus:border-accent"
             />
-            <span className="mt-1 block text-[11px] text-ink-500">站点上限 {payload.caps.maxPerHour} 条/小时</span>
+            <span className="mt-1 block text-[11px] text-ink-500">site cap {payload.caps.maxPerHour} items/h</span>
           </label>
           <label className="block">
-            <span className="text-[12px] text-ink-700">攒批周期</span>
+            <span className="text-[12px] text-ink-700">Batch interval</span>
             <select
               value={num(s.batchIntervalMin, 30)}
               onChange={(e) => void save({ batchIntervalMin: Number(e.target.value) })}
               className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 text-[12.5px] text-ink-950 outline-none focus:border-accent"
             >
-              <option value={0}>关闭攒批</option>
-              <option value={5}>每 5 分钟</option>
-              <option value={10}>每 10 分钟</option>
-              <option value={30}>每 30 分钟</option>
-              <option value={60}>每 1 小时</option>
-              <option value={120}>每 2 小时</option>
+              <option value={0}>Batching off</option>
+              <option value={5}>Every 5 min</option>
+              <option value={10}>Every 10 min</option>
+              <option value={30}>Every 30 min</option>
+              <option value={60}>Every 1h</option>
+              <option value={120}>Every 2h</option>
             </select>
           </label>
           <div className="space-y-1.5 rounded-lg border border-ink-200 bg-surface-hover p-3">
             <label className="flex items-center justify-between gap-2 text-[12px] text-ink-700">
               <span className="inline-flex items-center gap-1.5">
-                <Moon size={12} className="text-ink-500" /> 夜间免打扰
+                <Moon size={12} className="text-ink-500" /> quiet hours
               </span>
               <input
                 type="checkbox"
@@ -429,7 +429,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               />
             </label>
             <label className="flex items-center justify-between gap-2 text-[12px] text-ink-700">
-              <span>时段</span>
+              <span>Hours</span>
               <input
                 defaultValue={str(s.quietHours, "23:30-08:00")}
                 onBlur={(e) => void save({ quietHours: e.target.value })}
@@ -437,17 +437,17 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               />
             </label>
             <label className="flex items-center justify-between gap-2 text-[12px] text-ink-700">
-              <span>时区</span>
+              <span>Timezone</span>
               <select
                 value={str(s.timezone, "Asia/Shanghai")}
                 onChange={(e) => void save({ timezone: e.target.value })}
                 className="rounded border border-ink-200 bg-surface px-2 py-1 text-[11.5px] text-ink-900 outline-none focus:border-accent"
               >
-                <option value="Asia/Shanghai">北京时间</option>
-                <option value="Asia/Tokyo">东京时间</option>
+                <option value="Asia/Shanghai">Beijing time</option>
+                <option value="Asia/Tokyo">Tokyo time</option>
                 <option value="UTC">UTC</option>
-                <option value="America/New_York">美东时间</option>
-                <option value="Europe/London">伦敦时间</option>
+                <option value="America/New_York">US Eastern</option>
+                <option value="Europe/London">London</option>
               </select>
             </label>
           </div>
@@ -459,7 +459,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                 onChange={(e) => void save({ useGlobalBlocks: e.target.checked })}
                 className="h-3.5 w-3.5 accent-[#111318]"
               />
-              继承全站噪音屏蔽词
+              Inherit the site-wide noise blocklist
             </label>
             <label className="inline-flex items-center gap-1.5">
               <input
@@ -468,7 +468,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
                 onChange={(e) => void save({ dailyEnabled: e.target.checked })}
                 className="h-3.5 w-3.5 accent-[#111318]"
               />
-              每天发一份个人日报
+              Send me a daily digest
             </label>
           </div>
         </section>
@@ -478,9 +478,9 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950">
-              <Sparkles size={14} className="text-accent" /> 实时效果预览（不会真正发出）
+              <Sparkles size={14} className="text-accent" /> live preview (nothing is actually sent)
             </div>
-            <p className="mt-0.5 text-[12px] text-ink-500">用最近 180 条按你的规则试算，看命中和被拦原因分布。</p>
+            <p className="mt-0.5 text-[12px] text-ink-500">Dry-runs your rules on the last 180 items to show hits and rejection reasons.</p>
           </div>
           <button
             type="button"
@@ -495,7 +495,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
             }}
             className="inline-flex items-center gap-1.5 rounded-lg bg-ink-950 px-3.5 py-2 text-[12.5px] font-medium text-white hover:bg-brand-hover"
           >
-            {busy === "preview" ? <Loader2 size={13} className="animate-spin" /> : <Eye size={13} />} 试算
+            {busy === "preview" ? <Loader2 size={13} className="animate-spin" /> : <Eye size={13} />} dry-run
           </button>
         </div>
 
@@ -503,7 +503,7 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-ink-200 bg-surface-hover px-3 py-2 text-[11.5px]">
               <span className="font-medium text-ink-700">
-                扫描 {preview.scanned} 条 · 通过 {preview.matched} 条 · 队列中 {preview.queued} 条
+                Scanned {preview.scanned} items · matched {preview.matched} items · queued {preview.queued} items
               </span>
               {Object.entries(preview.rejectedBy).map(([k, v]) => (
                 <span key={k} className="rounded bg-ink-100 px-2 py-0.5 text-ink-600">
@@ -513,15 +513,15 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="rounded-lg border border-ink-200 bg-surface-hover p-3">
-                <div className="mb-1.5 text-[12px] font-medium text-deal">⚡ 会立即推送</div>
+                <div className="mb-1.5 text-[12px] font-medium text-deal">⚡ Instant push</div>
                 <pre className="max-h-[200px] overflow-auto font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-ink-700">
-                  {preview.instant.length ? preview.instant.join("\n") : "（当前条件下没有立即推送的条目）"}
+                  {preview.instant.length ? preview.instant.join("\n") : "(no instant-push items under current conditions)"}
                 </pre>
               </div>
               <div className="rounded-lg border border-ink-200 bg-surface-hover p-3">
-                <div className="mb-1.5 text-[12px] font-medium text-brand">📦 会进攒批</div>
+                <div className="mb-1.5 text-[12px] font-medium text-brand">📦 Goes to batch</div>
                 <pre className="max-h-[200px] overflow-auto font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-ink-700">
-                  {preview.batch.length ? preview.batch.join("\n") : "（当前条件下没有攒批条目）"}
+                  {preview.batch.length ? preview.batch.join("\n") : "(no batch items under current conditions)"}
                 </pre>
               </div>
             </div>
@@ -531,10 +531,10 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
 
       <section className="panel overflow-hidden">
         <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
-          <span className="text-[13.5px] font-semibold text-ink-950">我的推送记录</span>
+          <span className="text-[13.5px] font-semibold text-ink-950">My push history</span>
           <div className="flex items-center gap-3 text-[11.5px] text-ink-500">
-            <span>近 24h 已发 {payload.stats.sentLast24h}</span>
-            <span>队列 {payload.stats.queued}</span>
+            <span>sent last 24h: {payload.stats.sentLast24h}</span>
+            <span>queue: {payload.stats.queued}</span>
             <button
               type="button"
               onClick={async () => {
@@ -543,21 +543,21 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
               }}
               className="font-medium text-accent hover:underline"
             >
-              刷新
+              Refresh
             </button>
           </div>
         </div>
         <div className="max-h-[360px] divide-y divide-ink-100 overflow-auto">
-          {logs.length === 0 && <div className="px-5 py-8 text-center text-[12.5px] text-ink-500">还没加载记录</div>}
+          {logs.length === 0 && <div className="px-5 py-8 text-center text-[12.5px] text-ink-500">Records not loaded yet</div>}
           {logs.map((l) => (
             <div key={l.id} className="px-5 py-2.5">
               <div className="flex flex-wrap items-center gap-2 text-[11.5px]">
                 <span className="rounded-md bg-ink-100 px-2 py-0.5 font-medium text-ink-700">
-                  {l.kind === "instant" ? "即时" : l.kind === "batch" ? "攒批" : l.kind}
+                  {l.kind === "instant" ? "Instant" : l.kind === "batch" ? "Batch" : l.kind}
                 </span>
                 <span className="font-mono text-ink-500">{l.created_at.replace("T", " ").slice(5, 19)}</span>
-                <span className="text-ink-600">{l.count} 条</span>
-                {l.ok === 0 && <span className="rounded bg-alert-subtle px-1.5 py-0.5 text-alert">失败</span>}
+                <span className="text-ink-600">{l.count} items</span>
+                {l.ok === 0 && <span className="rounded bg-alert-subtle px-1.5 py-0.5 text-alert">Failed</span>}
                 {l.reason && <span className="truncate text-ink-500">· {l.reason}</span>}
               </div>
               <pre className="mt-1 max-h-[64px] overflow-hidden font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-ink-600">
@@ -571,8 +571,8 @@ export function UserPushPanel({ boot }: { boot: Bootstrap }) {
 
       {boot.siteMode === "public" && (
         <p className="px-1 text-[11.5px] leading-relaxed text-ink-500">
-          这里只放最常用的几项。要按内容形态、分类、获取方式、价格、语言、时效、多路由细调，去左侧「我的推送规则」——
-          那是同一套完整面板，只是写的是你自己的规则。个人屏蔽词与关注词在「我的订阅与屏蔽」里改。
+          Only the most common settings live here. For kind, category, obtain mode, price, language, freshness, and multi-route fine-tuning, open "My Push Rules" on the left —
+          it is the same full panel, just writing to your own rules. Personal blocklist and watched keywords are managed in "My Subscriptions & Blocklist". 
         </p>
       )}
     </div>

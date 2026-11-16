@@ -54,12 +54,12 @@ export function DigestPanel({
                   : "border-ink-200 bg-surface text-ink-700 hover:bg-ink-100")
               }
             >
-              {d.kind === "weekly" ? <span className="mr-1 text-[10.5px] opacity-80">周报</span> : null}
+              {d.kind === "weekly" ? <span className="mr-1 text-[10.5px] opacity-80">Weekly</span> : null}
               {d.date}
-              {d.pushed_at ? <span className="ml-1.5 text-[11px] opacity-80">· 已推</span> : null}
+              {d.pushed_at ? <span className="ml-1.5 text-[11px] opacity-80">· pushed</span> : null}
             </button>
           ))}
-          {!digests.length && <span className="text-[13px] text-ink-500">还没有生成过每日精选</span>}
+          {!digests.length && <span className="text-[13px] text-ink-500">No daily digests generated yet</span>}
         </div>
 
         {canAdmin && (
@@ -78,7 +78,7 @@ export function DigestPanel({
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-[12.5px] font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50"
             >
               {running ? <Loader2 size={13} className="animate-spin" /> : <Play size={13} />}
-              立即生成今日精选
+              Generate today's digest now
             </button>
             <button
               type="button"
@@ -91,11 +91,11 @@ export function DigestPanel({
                   setWeeklyRunning(false);
                 }
               }}
-              title="汇总近 7 天 AI 判为真福利且未过期的条目，附本周热词与分类分布"
+              title="Summarizes items from the last 7 days that AI verified as freebies and not expired, plus weekly hot words and category breakdown"
               className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-2 text-[12.5px] font-medium text-ink-700 transition-colors hover:bg-ink-100 disabled:opacity-50"
             >
               {weeklyRunning ? <Loader2 size={13} className="animate-spin" /> : <CalendarDays size={13} />}
-              生成本周周报
+              Generate weekly digest
             </button>
           </div>
         )}
@@ -104,14 +104,14 @@ export function DigestPanel({
       {!digests.length && (
         <div className="panel flex flex-col items-center gap-3 px-6 py-16 text-center">
           <Sparkles size={26} className="text-ink-400" />
-          <div className="text-[14.5px] font-medium text-ink-900">还没有日报记录</div>
+          <div className="text-[14.5px] font-medium text-ink-900">No digest records yet</div>
           <p className="max-w-md text-[12.5px] leading-relaxed text-ink-500">
-            点右上角「立即生成今日精选」，会按照你在「推送规则」里设好的价格、分类与 AI 条件生成今日精选并自动记录。
+            Click "Generate today's digest now" in the top right: it generates today's digest using the price, category, and AI conditions set in "Push Rules", and records it automatically. 
           </p>
         </div>
       )}
 
-      {detail.loading && <div className="panel p-6 text-[13px] text-ink-500">加载日报中…</div>}
+      {detail.loading && <div className="panel p-6 text-[13px] text-ink-500">Loading digest…</div>}
       {detail.error && (
         <div className="panel border-alert-border bg-alert-subtle p-4 text-[13px] text-alert">{detail.error}</div>
       )}
@@ -120,10 +120,10 @@ export function DigestPanel({
         <>
           <div className="panel p-5">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[13.5px]">
-              <span className="font-semibold text-ink-950">{detail.data.date} 精选摘要</span>
+              <span className="font-semibold text-ink-950">{detail.data.date} picksSummary</span>
               <span className="text-[12px] text-ink-500">
-                共 {detail.data.count} 条 · 生成于 {detail.data.created_at.replace("T", " ").slice(5, 16)}
-                {detail.data.pushed_at ? " · 已发 Telegram" : " · 仅落库"}
+                Total {detail.data.count} items · generated {detail.data.created_at.replace("T", " ").slice(5, 16)}
+                {detail.data.pushed_at ? " · Sent to Telegram" : " · saved only"}
               </span>
             </div>
             <pre className="mt-2 max-h-[240px] overflow-auto rounded-lg border border-ink-200 bg-surface-hover p-3.5 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-700">

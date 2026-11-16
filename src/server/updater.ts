@@ -303,7 +303,7 @@ export async function runUpdate(): Promise<UpdateJob> {
   } else {
     job.status = "failed";
     job.finishedAt = new Date().toISOString();
-    job.error = "当前为只读容器环境，无法在进程内自更新";
+    job.error = "Read-only container environment; cannot self-update in-process";
     job.steps.push({ name: "环境预检", status: "failed", detail: job.error });
   }
   return job;

@@ -3,17 +3,17 @@ import { AlertTriangle, Github, Loader2, LogIn, Ticket, X } from "lucide-react";
 import type { Bootstrap } from "../lib/session.ts";
 
 const HASH_MESSAGES: Record<string, string> = {
-  "login-disabled": "站点当前已关闭登录",
-  "login-unconfigured": "站点还没配置 LINUX DO 登录凭据",
-  "login-failed": "登录失败，请重试",
-  "login-state-mismatch": "登录状态校验失败（可能链接过期），请重新发起登录",
-  "login-inactive": "该 LINUX DO 账号未激活",
-  "login-silenced": "该 LINUX DO 账号处于禁言状态，暂时无法登录",
-  "login-trust": "信任等级不足，站点设置了登录门槛",
-  "login-banned": "该账号已被站点停用",
-  "register-closed": "站点当前已停止新用户注册（老用户仍可正常登录）",
-  "quota-full": "站点注册名额已满，暂时停止新用户注册（老用户仍可正常登录）",
-  "invite-invalid": "邀请码无效或已用完",
+  "login-disabled": "Login is currently disabled",
+  "login-unconfigured": "The site has no LINUX DO login credentials configured yet",
+  "login-failed": "Login failed, try again",
+  "login-state-mismatch": "Login state check failed (the link may have expired) — start the login again",
+  "login-inactive": "This LINUX DO account is not activated",
+  "login-silenced": "This LINUX DO account is silenced and cannot log in right now",
+  "login-trust": "Trust level too low — the site requires a higher one",
+  "login-banned": "This account has been disabled",
+  "register-closed": "New signups are currently closed (existing users can still log in)",
+  "quota-full": "Site registration quota is full — new signups paused (existing users can still log in)",
+  "invite-invalid": "Invite code invalid or used up",
 };
 
 export function AuthModal({
@@ -54,10 +54,10 @@ export function AuthModal({
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; needInvite?: boolean; message?: string };
       if (!res.ok) {
-        setError(data.error ?? "本地测试登录失败");
+        setError(data.error ?? "Local test login failed");
         return;
       }
-      // 邀请码模式下后端会返回 needInvite：切到补码界面，走和真实 OAuth 一样的准入
+      // Invite code模式下后端会返回 needInvite: 切到补码界面, 走和真实 OAuth 一样的准入
       if (data.needInvite) {
         setInviteMode(true);
         setError(data.error ?? data.message ?? null);
@@ -81,7 +81,7 @@ export function AuthModal({
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; expired?: boolean };
       if (!res.ok) {
-        setError(data.error ?? "邀请码校验失败");
+        setError(data.error ?? "Invite code check failed");
         return;
       }
       onDone();
@@ -96,19 +96,19 @@ export function AuthModal({
         <div className="flex items-start justify-between gap-3 border-b border-ink-100 px-5 py-3.5">
           <div>
             <h2 className="text-[15px] font-semibold text-ink-950">
-              {inviteMode ? "输入邀请码完成注册" : "用 LINUX DO 登录"}
+              {inviteMode ? "Enter an invite code to finish signing up" : "Log in with LINUX DO"}
             </h2>
             <p className="mt-0.5 text-[11.5px] text-ink-500">
               {inviteMode
-                ? "你的 LINUX DO 身份已验证，再填一枚邀请码即可开通账号"
-                : "登录后可跨设备同步收藏与屏蔽，并绑定自己的 Telegram Bot"}
+                ? "Your LINUX DO identity is verified — enter an invite code to activate your account"
+                : "Log in to sync stars and blocks across devices and bind your own Telegram Bot"}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-900"
-            title="关闭"
+            title="Close"
           >
             <X size={14} />
           </button>
@@ -125,7 +125,7 @@ export function AuthModal({
           {inviteMode ? (
             <>
               <label className="block">
-                <span className="text-[12px] font-medium text-ink-700">邀请码</span>
+                <span className="text-[12px] font-medium text-ink-700">Invite code</span>
                 <input
                   value={invite}
                   onChange={(e) => setInvite(e.target.value.toUpperCase())}
@@ -145,24 +145,24 @@ export function AuthModal({
                 className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-ink-950 px-3 py-2 text-[13px] font-medium text-white hover:bg-brand-hover disabled:opacity-60"
               >
                 {busy === "invite" ? <Loader2 size={14} className="animate-spin" /> : <Ticket size={14} />}
-                验证并完成注册
+                Verify & finish signup
               </button>
               <p className="text-[11px] leading-relaxed text-ink-500">
-                凭证 10 分钟内有效。过期了就关掉这个窗口重新点「LINUX DO 登录」。
+                The credential is valid for 10 minutes; if it expires, close this window and click "LINUX DO Log in" again. 
               </p>
             </>
           ) : (
             <>
               {boot.loginEnabled ? (
                 <>
-                  {/* 只有邀请码注册时才显示补码输入；开放注册下这里是空噪声 */}
+                  {/* 只有Invite-only signup时才显示补码输入; Open signup下这里是空噪声 */}
                   {boot.registrationMode === "invite" && (
                     <label className="block">
-                      <span className="text-[12px] font-medium text-ink-700">邀请码</span>
+                      <span className="text-[12px] font-medium text-ink-700">Invite code</span>
                       <input
                         value={invite}
                         onChange={(e) => setInvite(e.target.value.toUpperCase())}
-                        placeholder="新用户必填，老用户留空"
+                        placeholder="Required for new users; leave empty otherwise"
                         maxLength={32}
                         className="mt-1 w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-2 font-mono text-[13px] tracking-wider text-ink-950 outline-none focus:border-accent"
                       />
@@ -175,7 +175,7 @@ export function AuthModal({
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-ink-950 px-3 py-2 text-[13px] font-medium text-white hover:bg-brand-hover disabled:opacity-60"
                   >
                     <LogIn size={14} />
-                    跳转 LINUX DO 授权
+                    Continue to LINUX DO
                   </button>
                   {boot.githubConfigured && (
                     <button
@@ -183,24 +183,24 @@ export function AuthModal({
                       onClick={() => startLogin(invite, "github")}
                       className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-2 text-[13px] font-medium text-ink-800 hover:bg-ink-100"
                     >
-                      <Github size={14} /> 跳转 GitHub 授权
+                      <Github size={14} /> Continue to GitHub
                     </button>
                   )}
                   {!boot.oauthConfigured && (
                     <p className="text-[11.5px] text-ink-500">
-                      服务端还没有配置 LINUXDO_CLIENT_ID / SECRET，先按下方的本地测试账号体验。
+                      The server has no LINUXDO_CLIENT_ID / SECRET yet — try the local test login below. 
                     </p>
                   )}
                 </>
               ) : (
                 <p className="rounded-md border border-ink-200 bg-surface-hover px-3 py-2 text-[12px] text-ink-600">
-                  站点当前已关闭登录入口。已有登录态不受影响。
+                  The login entry is disabled. Existing sessions are not affected. 
                 </p>
               )}
 
               {boot.devMockEnabled && (
                 <div className="rounded-lg border border-ink-200 bg-surface-hover p-3">
-                  <div className="mb-2 text-[11.5px] font-medium text-ink-700">本地测试账号（仅非生产环境可见）</div>
+                  <div className="mb-2 text-[11.5px] font-medium text-ink-700">Local test login (visible only outside production)</div>
                   <div className="flex gap-2">
                     {(["alice", "bob"] as const).map((preset) => (
                       <button
@@ -211,12 +211,12 @@ export function AuthModal({
                         className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-60"
                       >
                         {busy === preset ? <Loader2 size={12} className="animate-spin" /> : null}
-                        账号 {preset === "alice" ? "A" : "B"}
+                        account {preset === "alice" ? "A" : "B"}
                       </button>
                     ))}
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-ink-500">
-                    用来验证「A 关掉的条目不会影响 B」，以及两个账号各自推送到自己的 Bot。
+                    Used for verification ("One user's hidden items never affect another's"), plus each account pushes to its own bot. 
                   </p>
                 </div>
               )}

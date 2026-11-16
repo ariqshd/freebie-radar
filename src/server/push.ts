@@ -495,10 +495,10 @@ function matchSubscriptions(item: { title: string; summary?: string | null }, ke
 }
 
 function fmtPrice(item: FreshItem): string | null {
-  if (item.isFree) return "免费";
+  if (item.isFree) return "Free";
   if (typeof item.price !== "number" || item.price <= 0) return null;
   const v = item.price < 1 ? "<1" : String(Math.round(item.price));
-  return "约 ¥" + v;
+  return "~¥" + v;
 }
 
 function fmtDeadline(item: FreshItem): string | null {
@@ -507,58 +507,58 @@ function fmtDeadline(item: FreshItem): string | null {
   if (Number.isNaN(t)) return null;
   const days = Math.ceil((t - Date.now()) / 86_400_000);
   if (days < 0) return null;
-  if (days === 0) return "今天截止";
-  if (days <= 14) return days + " 天后截止";
+  if (days === 0) return "ends today";
+  if (days <= 14) return `ends in ${days}d`;
   return null;
 }
 
 export const SOURCE_SHORT: Record<string, string> = {
-  "linuxdo-welfare": "LINUX DO 福利",
-  "linuxdo-resource": "LINUX DO 资源",
-  "v2ex-free": "V2EX 免费赠送",
-  "v2ex-deals": "V2EX 优惠",
-  "v2ex-share": "V2EX 分享",
-  "v2ex-promotions": "V2EX 推广",
-  "v2ex-cloud": "V2EX 云",
-  "xiaoheihe-search": "小黑盒",
-  "zhihu-search": "知乎",
-  "xhs-search": "小红书",
+  "linuxdo-welfare": "LINUXDO Freebies",
+  "linuxdo-resource": "LINUXDO Resources",
+  "v2ex-free": "V2EX Giveaways",
+  "v2ex-deals": "V2EX Deals",
+  "v2ex-share": "V2EX Share",
+  "v2ex-promotions": "V2EX Promos",
+  "v2ex-cloud": "V2EX Cloud",
+  "xiaoheihe-search": "Xiaoheihe",
+  "zhihu-search": "Zhihu",
+  "xhs-search": "XHS",
   gamerpower: "GamerPower",
-  "epic-free": "Epic 喜加一",
-  "steam-free": "Steam 限免",
-  "gog-free": "GOG 限免",
+  "epic-free": "Epic Free Games",
+  "steam-free": "Steam Free",
+  "gog-free": "GOG Free",
   "cheapshark-free": "CheapShark",
-  "rss-isthereanydeal": "ITAD 喜加一",
+  "rss-isthereanydeal": "ITAD Giveaways",
   "rss-indiegamebundles": "IndieGameBundles",
   "rss-ggdeals": "GG.deals",
-  "rss-reddit-freegames": "Reddit 游戏",
+  "rss-reddit-freegames": "Reddit Games",
   "rss-reddit-freegamesonsteam": "Reddit Steam",
-  "rss-reddit-efreebies": "Reddit 电子福利",
+  "rss-reddit-efreebies": "Reddit eFreebies",
   "rss-reddit-gamedeals": "Reddit GameDeals",
   "rss-reddit-freebies": "Reddit Freebies",
-  "rss-reddit-apphookup": "AppHookup 限免",
-  "rss-reddit-freeebooks": "Reddit 电子书",
-  "rss-reddit-googleplay": "GooglePlay 限免",
-  "rss-keylol": "其乐",
+  "rss-reddit-apphookup": "AppHookup",
+  "rss-reddit-freeebooks": "Reddit eBooks",
+  "rss-reddit-googleplay": "GooglePlay Deals",
+  "rss-keylol": "Keylol",
   "rss-slickdeals": "Slickdeals",
   "rss-heyitsfree": "HeyItsFree",
   "rss-freebieshark": "FreebieShark",
-  "rss-giveawayoftheday": "今日限免软件",
+  "rss-giveawayoftheday": "GOTD",
   "rss-vonbeau": "VonBeau",
   "rss-hip2save": "Hip2Save",
   "rss-ozbargain": "OzBargain",
   "rss-lowendbox": "LowEndBox",
-  "rss-iplaysoft": "异次元软件",
-  "tg-freegames": "TG 游戏情报",
-  "tg-cn-deals": "TG 中文羊毛",
-  "bsky-gamedeals": "Bluesky 游戏",
-  "bsky-plugins": "Bluesky 插件",
+  "rss-iplaysoft": "Iplaysoft",
+  "tg-freegames": "TG GameIntel",
+  "tg-cn-deals": "TG CN Deals",
+  "bsky-gamedeals": "Bluesky Games",
+  "bsky-plugins": "Bluesky Plugins",
   "rss-nodeseek": "NodeSeek",
-  "rss-sharewareonsale": "正版限免",
-  "rss-tickcoupon": "终身限免",
-  "rss-fuliba": "福利吧",
-  "rss-52pojie": "吾爱破解",
-  "rss-smzdm": "什么值得买",
+  "rss-sharewareonsale": "SharewareOnSale",
+  "rss-tickcoupon": "TickCoupon",
+  "rss-fuliba": "Fuliba",
+  "rss-52pojie": "52pojie",
+  "rss-smzdm": "SMZDM",
   "github-free-for-dev": "GitHub",
 };
 
@@ -638,14 +638,14 @@ function decide(item: FreshItem, s: PushSettings, subHits: string[], route: Push
     return { push: false, reason: "", urgent: false, route };
   }
   if (s.prioritizeSubscribed && subHits.length > 0) {
-    return { push: true, reason: routeTag + "订阅命中：" + subHits.join("/"), urgent: true, route };
+    return { push: true, reason: routeTag + "subscription hit: " + subHits.join("/"), urgent: true, route };
   }
-  if (s.instantOnCodes && item.codes.length > 0) return { push: true, reason: routeTag + "含兑换码", urgent: true, route };
+  if (s.instantOnCodes && item.codes.length > 0) return { push: true, reason: routeTag + "has redeem codes", urgent: true, route };
   if (s.instantOnUrgent && URGENT.test(item.title) && item.score >= 40) {
-    return { push: true, reason: routeTag + "限量/限时", urgent: true, route };
+    return { push: true, reason: routeTag + "limited/time-limited", urgent: true, route };
   }
   const scoreGate = route ? Math.max(s.instantScore, route.minScore) : s.instantScore;
-  if (item.score >= scoreGate) return { push: true, reason: routeTag + "高分 " + Math.round(item.score), urgent: false, route };
+  if (item.score >= scoreGate) return { push: true, reason: routeTag + "high score " + Math.round(item.score), urgent: false, route };
   return { push: false, reason: "", urgent: false, route };
 }
 
@@ -749,7 +749,7 @@ export function startPushScheduler(): void {
   const s = getPushSettings();
   if (!s.enabled || !pushEnabled) return;
   scheduleFlush();
-  console.log("[push] 攒批调度已启动，间隔 " + s.batchIntervalMin + " 分钟");
+  console.log("[push] batch scheduler started, interval " + s.batchIntervalMin + " min");
 }
 
 /* ------------------------------------------------------------------ *
@@ -784,14 +784,14 @@ export function itemBlock(sourceId: string, it: FreshItem, s: PushSettings, seq?
     const dl = fmtDeadline(it);
     if (dl) meta.push(dl);
   }
-  if (subHits.length) meta.push("订阅：" + subHits.join("/"));
+  if (subHits.length) meta.push("subs: " + subHits.join("/"));
   if (detectLang(it.title) === "en" && s.langMode === "all") meta.push("EN");
-  if (s.includeScore && it.score) meta.push(Math.round(it.score) + " 分");
+  if (s.includeScore && it.score) meta.push(Math.round(it.score) + " pts");
 
   lines.push(prefix + it.title.slice(0, 110));
   lines.push("   " + meta.join(" · "));
   if (s.includeAiReason && it.aiReason) lines.push("   💡 " + it.aiReason);
-  if (it.codes.length) lines.push("   码：" + it.codes.join(" / "));
+  if (it.codes.length) lines.push("   codes: " + it.codes.join(" / "));
   lines.push("   " + it.url);
   return lines;
 }
@@ -838,7 +838,7 @@ export async function pushInstant(sourceId: string, fresh: FreshItem[]): Promise
         item: it,
         subHits,
         route,
-        reason: d.reason || (route ? `[${route.name}] ` : "") + "达到攒批高分",
+        reason: d.reason || (route ? `[${route.name}] ` : "") + "reached batch score",
       });
       deduper?.markSeen(it);
     }
@@ -893,7 +893,7 @@ export async function pushInstant(sourceId: string, fresh: FreshItem[]): Promise
 
   let sent = 0;
   for (const { it, reason, subHits, route } of picked) {
-    const prefix = route?.header ? route.header + " · " : s.customHeader ? s.customHeader + " · " : "⚡ 新动态 · ";
+    const prefix = route?.header ? route.header + " · " : s.customHeader ? s.customHeader + " · " : "⚡ New · ";
     const lines = [prefix + reason, "", ...itemBlock(sourceId, it, s, undefined, subHits)];
     const text = lines.join("\n");
     try {
@@ -1133,7 +1133,7 @@ status: string;
 function summarizeReasons(reasons: (string | undefined)[]): string {
   const counts = new Map<string, number>();
   for (const r of reasons) {
-    const key = (r?.trim() || "达到攒批高分").replace(/^\[[^\]]+\]\s*/, "").replace(/高分\s*\d+/, "高分");
+    const key = (r?.trim() || "reached batch score").replace(/^\[[^\]]+\]\s*/, "").replace(/高分\s*\d+/, "高分");
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return [...counts.entries()]

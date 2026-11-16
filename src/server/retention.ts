@@ -94,7 +94,7 @@ export function runCleanup(s?: RetentionSettings, dryRun = false): CleanupReport
 
   const plans: { label: string; sql: string; params: (string | number)[] }[] = [
     {
-      label: "过期非福利条目",
+      label: "Expired non-freebie items",
       sql: `DELETE FROM items
             WHERE starred = 0 AND NOT EXISTS (SELECT 1 FROM user_item_states uis WHERE uis.item_id = items.id AND uis.starred = 1)
               AND COALESCE(ai_keep, 0) != 1
@@ -102,7 +102,7 @@ export function runCleanup(s?: RetentionSettings, dryRun = false): CleanupReport
       params: [iso(cfg.itemDays)],
     },
     {
-      label: "过期福利条目",
+      label: "Expired freebie items",
       sql: `DELETE FROM items
             WHERE starred = 0 AND NOT EXISTS (SELECT 1 FROM user_item_states uis WHERE uis.item_id = items.id AND uis.starred = 1)
               AND COALESCE(ai_keep, 0) = 1
@@ -110,17 +110,17 @@ export function runCleanup(s?: RetentionSettings, dryRun = false): CleanupReport
       params: [iso(cfg.keptDays)],
     },
     {
-      label: "手动关闭的条目",
+      label: "Manually hidden items",
       sql: `DELETE FROM items WHERE starred = 0 AND NOT EXISTS (SELECT 1 FROM user_item_states uis WHERE uis.item_id = items.id AND uis.starred = 1) AND status = 'ignored' AND COALESCE(published_at, first_seen_at) < ?`,
       params: [iso(cfg.ignoredDays)],
     },
     {
-      label: "推送日志",
+      label: "Push logs",
       sql: "DELETE FROM push_log WHERE created_at < ?",
       params: [iso(cfg.pushLogDays)],
     },
     {
-      label: "每日精选",
+      label: "Daily digests",
       sql: "DELETE FROM digests WHERE created_at < ?",
       params: [iso(cfg.digestDays)],
     },

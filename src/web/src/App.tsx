@@ -53,7 +53,7 @@ import { WelcomeModal } from "./components/WelcomeModal.tsx";
 import { RssModal } from "./components/RssModal.tsx";
 import { KIND_LABEL, KIND_ORDER, OBTAIN_HINT, OBTAIN_LABEL, SOURCE_GROUPS, categoriesForPreset, categoryLabelForPreset, channelExcluded, formatInterval, groupOfSource } from "./lib/sources.ts";
 
-// 管理区 / 次要 Tab 的大面板按需加载：首屏只发资源流真正要用的代码
+// Admin / 次要 Tab 的大面板按需加载: 首屏只发Feed真正要用的代码
 const DigestPanel = lazy(async () => ({ default: (await import("./components/DigestPanel.tsx")).DigestPanel }));
 const HotPanel = lazy(async () => ({ default: (await import("./components/HotPanel.tsx")).HotPanel }));
 const RulesPanel = lazy(async () => ({ default: (await import("./components/RulesPanel.tsx")).RulesPanel }));
@@ -80,30 +80,30 @@ import type {
 } from "./types.ts";
 
 const SOURCE_LABEL: Record<string, string> = {
-  "linuxdo-welfare": "LINUX DO · 福利羊毛",
-  "linuxdo-resource": "LINUX DO · 资源荟萃",
-  "v2ex-free": "V2EX · 免费赠送",
+  "linuxdo-welfare": "LINUX DO · Freebies",
+  "linuxdo-resource": "LINUX DO · Resources",
+  "v2ex-free": "V2EX · Free Giveaways",
   "github-free-for-dev": "GitHub · free-for-dev",
-  "rss-fuliba": "福利吧",
-  "rss-52pojie": "吾爱破解",
-  "rss-smzdm": "什么值得买",
-  "zhihu-search": "知乎 · 福利搜索",
-  "xhs-search": "小红书 · 福利搜索",
-  "xiaoheihe-search": "小黑盒 · 福利搜索",
-  "tg-channels": "Telegram 频道",
-  gamerpower: "GamerPower · 免费游戏",
-  "epic-free": "Epic Games · 喜加一",
+  "rss-fuliba": "Fuliba",
+  "rss-52pojie": "52pojie",
+  "rss-smzdm": "SMZDM",
+  "zhihu-search": "Zhihu · Freebie Search",
+  "xhs-search": "Xiaohongshu · Freebie Search",
+  "xiaoheihe-search": "Xiaoheihe · Freebie Search",
+  "tg-channels": "Telegram Channels",
+  gamerpower: "GamerPower · Free Games",
+  "epic-free": "Epic Games · Free Games",
   "rss-reddit-freegames": "Reddit · FreeGameFindings",
   "rss-reddit-efreebies": "Reddit · eFreebies",
   "rss-reddit-gamedeals": "Reddit · GameDeals",
   "rss-slickdeals": "Slickdeals",
   "rss-heyitsfree": "HeyItsFree",
-  "rss-keylol": "其乐 Keylol",
-  "openrouter-free": "OpenRouter · 新免费大模型",
-  "gamerpower-loot": "GamerPower · 免费礼包与 Key",
-  "rss-itch-free": "itch.io · 100% 限免游戏",
-  "rss-freesteamkeys": "FreeSteamKeys · Steam 限免",
-  "rss-ghxi": "果核剥壳 · 免费软件",
+  "rss-keylol": "Keylol",
+  "openrouter-free": "OpenRouter · New Free Models",
+  "gamerpower-loot": "GamerPower · Free Loot & Keys",
+  "rss-itch-free": "itch.io · 100% Off Games",
+  "rss-freesteamkeys": "FreeSteamKeys · Steam Freebies",
+  "rss-ghxi": "Ghxi · Free Software",
 };
 
 let SOURCE_NAMES: Record<string, string> = { ...SOURCE_LABEL };
@@ -158,32 +158,32 @@ function Toast({ message }: { message: string | null }) {
 type Preset = { key: string; label: string; icon: typeof Sparkles };
 
 const PRIMARY_CHANNELS: Preset[] = [
-  { key: "verified", label: "真福利", icon: Sparkles },
-  { key: "pan", label: "网盘/网课", icon: FolderOpen },
-  { key: "offline", label: "实地福利", icon: MapPin },
-  { key: "deal", label: "黑五/好价", icon: Flame },
-  { key: "opensource", label: "开源项目", icon: Code },
-  { key: "news", label: "重要新闻", icon: Newspaper },
-  { key: "info", label: "行业资讯", icon: TrendingUp },
+  { key: "verified", label: "Verified Freebies", icon: Sparkles },
+  { key: "pan", label: "Cloud Drives / Courses", icon: FolderOpen },
+  { key: "offline", label: "In-person Freebies", icon: MapPin },
+  { key: "deal", label: "Black Friday/Deals", icon: Flame },
+  { key: "opensource", label: "Open Source", icon: Code },
+  { key: "news", label: "Top News", icon: Newspaper },
+  { key: "info", label: "Industry News", icon: TrendingUp },
 ];
 
 const SECONDARY_VIEWS: Preset[] = [
-  { key: "codes", label: "含兑换码", icon: Zap },
-  { key: "urgent", label: "今日截止", icon: Bell },
-  { key: "starred", label: "我的收藏", icon: Check },
-  { key: "all", label: "全部收录", icon: AlignJustify },
-  { key: "hidden", label: "已关闭", icon: EyeOff },
+  { key: "codes", label: "Has Codes", icon: Zap },
+  { key: "urgent", label: "Ending Today", icon: Bell },
+  { key: "starred", label: "Starred", icon: Check },
+  { key: "all", label: "All Items", icon: AlignJustify },
+  { key: "hidden", label: "Hidden", icon: EyeOff },
 ];
 
 const PRESETS: Preset[] = [...PRIMARY_CHANNELS, ...SECONDARY_VIEWS];
 
 
-// 主仓库地址：顶栏 GitHub 图标跳这里
+// 主仓库地址: 顶栏 GitHub 图标跳这里
 const REPO_URL = "https://github.com/ZiChuanLan/freebie-radar";
-// 移动端顶栏图标按钮统一尺寸，5 个并排也不挤
+// 移动端顶栏图标按钮统一尺寸, 5 并排也不挤
 const ICON_BTN =
   "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-ink-200 bg-surface text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950";
-// 公开区：任何人不登录就能看。其余全部归管理区。
+// 公开区: 任何人不Log in就能看. 其余All归Admin. 
 const PUBLIC_TABS = new Set<Tab>(["feed", "digest"]);
 const ADMIN_TABS = new Set<Tab>(["rules", "push", "ai", "ops"]);
 
@@ -199,12 +199,12 @@ export function App() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [detail, setDetail] = useState<Item | null>(null);
   const [quickBlock, setQuickBlock] = useState<Item | null>(null);
-  // 合并组展开：记录展开的条目 id 与其同福利的其他来源
+  // Merge组展开: 记录展开的items目 id and其同福利的其他来源
   const [relatedOpen, setRelatedOpen] = useState<number | null>(null);
   const [relatedMap, setRelatedMap] = useState<Record<number, (Item & { sourceName?: string })[]>>({});
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | null>(null);
-  // 展开合并组时按需拉取其他来源报道（同一 title_key 的兄弟条目）
+  // 展开Merge组时按需拉取其他来源报道 (同一 title_key 的兄弟items目)
   useEffect(() => {
     const id = relatedOpen;
     if (!id || relatedMap[id]) return;
@@ -221,7 +221,7 @@ export function App() {
       alive = false;
     };
   }, [relatedOpen, relatedMap]);
-  // 服务端是否启用管理密码（决定是否拦截管理区）
+  // 服务端是否EnableAdmin password (决定是否拦截Admin)
   const [authChecked, setAuthChecked] = useState(false);
   const [protectedMode, setProtectedMode] = useState(false);
   const [adminAuthed, setAdminAuthed] = useState(() => Boolean(getToken()));
@@ -248,22 +248,22 @@ export function App() {
   const [rssOpen, setRssOpen] = useState(false);
   const [guest, setGuest] = useState<GuestState>(() => readGuest());
 
-  // 公开站未登录时，个人状态全部落 localStorage；登录后用 /api/me/* 云同步
+  // 公开站未Log in时, 人StatusAll落 localStorage; Log in后用 /api/me/* 云同步
   const guestMode = isPublicSite && !me;
   const syncGuest = useCallback(() => setGuest(readGuest()), []);
 
-  // 入站公告：按 version 记一次，站长改内容后自增版本号即可重新弹出
+  // Welcome notice: 按 version 记一次, 站长改内容后自增版本号即可重新弹出
   useEffect(() => {
     if (!bootData?.onboarding?.enabled) return;
     const key = "radar_onboarding_seen_v" + bootData.onboarding.version;
     try {
       if (!localStorage.getItem(key)) setWelcomeOpen(true);
     } catch {
-      /* 隐私模式下每次都会弹，可以接受 */
+      /* 隐私模式下每次都会弹, 可以接受 */
     }
   }, [bootData?.onboarding?.enabled, bootData?.onboarding?.version]);
 
-  // OAuth 回跳带 #invite-required / #login-* 时自动开登录弹窗并显示对应错误
+  // OAuth 回跳带 #invite-required / #login-* 时自动开Log in弹窗并显示对应错误
   useEffect(() => {
     const h = location.hash.replace("#", "");
     if (!h) return;
@@ -319,7 +319,7 @@ export function App() {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [showAllSources, setShowAllSources] = useState(false);
   const [unreadOnly, setUnreadOnly] = useState(false);
-  /** 移动端：顶部筛选面板（含快捷视图、数据源与筛选条）展开态 */
+  /** 移动端: 顶部Filters面板 (含Quick views, SourcesandFiltersitems)展开态 */
   const [mobileFilterBar, setMobileFilterBar] = useState(false);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
@@ -343,7 +343,7 @@ export function App() {
   const copyCode = useCallback(
     (code: string) => {
       void navigator.clipboard?.writeText(code);
-      notify("已复制兑换码 " + code);
+      notify("Copied code " + code);
     },
     [notify],
   );
@@ -372,7 +372,7 @@ export function App() {
     const nextSearch = sp.toString();
     history.replaceState(null, "", location.pathname + (nextSearch ? "?" + nextSearch : "") + "#ops");
     setTab("ops");
-    notify(`已完成 ${site} 登录并回传公开福利（Cookie 仅留本机）`);
+    notify(`${site} login finished and public freebies were sent back (cookies stay local)`);
   }, [notify]);
 
   const [, bumpNames] = useState(0);
@@ -416,11 +416,11 @@ export function App() {
       if (kindFilter === "auto") p.set("kind", "freebie");
       if (obtain === "auto") p.set("obtain", "free,conditional");
       if (range === "auto") p.set("maxAgeDays", "7");
-      // 网盘资源与网课教程属于长期资料型内容，单独成频道，不混进「真福利」
+      // 网盘资源and网课教程属于长期资料型内容, 单独成频道, 不混进"Verified Freebies"
       const excludedCats = channelExcluded("verified");
       if (categories.length === 0 && excludedCats.length) p.set("excludeCategory", excludedCats.join(","));
     } else if (preset === "offline") {
-      // 实地福利独立频道：线下/门店/现场领取，不混进真福利
+      // In-person Freebies独立频道: 线下/门店/现场领取, 不混进Verified Freebies
       p.set("unexpired", "1");
       p.set("hideRejected", "1");
       if (categories.length === 0) p.set("category", "offline");
@@ -521,9 +521,9 @@ export function App() {
   }, []);
   const stats = useApi<Stats>(statsQuery ? `/api/stats?${statsQuery}` : "/api/stats");
   const items = useApi<{ total: number; items: Item[] }>(`/api/items?${query}`);
-  // 公开站登录用户读写的是自己的订阅与屏蔽词；自建站与管理区沿用全局接口
+  // 公开站Log in用户读写的是自己的Subscriptions & Blocklistlist; 自建站andAdmin沿用Global接口
   const rulesBase = adminReady ? "/api" : isPublicSite && me ? "/api/me" : null;
-  // 推送规则同样分两套：站长改全局，登录用户改自己的（同一套面板，只是接口不同）
+  // Push Rules同样分两套: 站长改Global, Log in用户改自己的 (同一套面板, 只是接口不同)
   const pushBase = adminReady ? "/api/push" : isPublicSite && me ? "/api/me/push" : null;
   const subs = useApi<{ subscriptions: Subscription[] }>(rulesBase ? rulesBase + "/subscriptions" : null);
   const sources = useApi<{ sources: Source[] }>("/api/sources");
@@ -537,7 +537,7 @@ export function App() {
   const [hotHours, setHotHours] = useState(24);
   const [hotScope, setHotScope] = useState<HotScope>("all");
   const hot = useApi<HotReport>(tab === "hot" ? `/api/hot?hours=${hotHours}&scope=${hotScope}` : null);
-  // 管理接口只在就绪后请求，避免公开区刷出一堆 401，也避免无密码模式卡住加载
+  // Admin接口只在就绪后请求, 避免公开区刷出一堆 401, 也避免无密码模式卡住加载
   const push = useApi<PushPayload>(pushBase);
   const ai = useApi<AiPayload>(adminReady && tab === "ai" ? "/api/ai" : null);
   const pushLogs = useApi<{ logs: PushLogItem[] }>(pushBase && tab === "push" ? pushBase + "/log?limit=40" : null);
@@ -557,7 +557,7 @@ export function App() {
 
   const patch = useCallback(
     async (id: number, body: Record<string, unknown>) => {
-      // 公开站未登录：只改本机 localStorage，不发请求，谁也不影响
+      // 公开站未Log in: 只改本机 localStorage, 不发请求, 谁也不影响
       if (guestMode) {
         guestPatch(id, body as { starred?: boolean; read?: boolean; status?: string });
         syncGuest();
@@ -579,7 +579,7 @@ export function App() {
       });
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string };
-        notify(err.error ?? "操作失败");
+        notify(err.error ?? "Action failed");
         return;
       }
       items.reload();
@@ -594,11 +594,11 @@ export function App() {
 
   const addRule = useCallback(
     async (pattern: string, mode: "keyword" | "regex", scope: string) => {
-      // 公开站：登录用户写自己的规则，访客写本机 localStorage
+      // 公开站: Log in用户写自己的规则, 访客写本机 localStorage
       if (guestMode) {
         guestAddBlock(pattern);
         syncGuest();
-        notify("已在本机屏蔽「" + pattern + "」");
+        notify("Blocked locally \"" + pattern + "\"");
         items.reload();
         return;
       }
@@ -610,10 +610,10 @@ export function App() {
       });
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string };
-        notify(err.error ?? "添加失败");
+        notify(err.error ?? "Failed to add");
         return;
       }
-      notify("已屏蔽「" + pattern + "」");
+      notify("Blocked \"" + pattern + "\"");
       blockRules.reload();
       items.reload();
       stats.reload();
@@ -633,7 +633,7 @@ export function App() {
   const addSubscription = useCallback(
     async (kw: string) => {
       if (guestMode) {
-        notify("登录后才能订阅关键词（访客偏好只存在本机）");
+        notify("Log in to subscribe to keywords (guest preferences stay local)");
         return;
       }
       await fetch(isPublicSite ? "/api/me/subscriptions" : "/api/subscriptions", {
@@ -643,7 +643,7 @@ export function App() {
       });
       subs.reload();
       items.reload();
-      notify("已订阅「" + kw + "」");
+      notify("Subscribed \"" + kw + "\"");
     },
     [subs, items, notify, guestMode, isPublicSite],
   );
@@ -672,7 +672,7 @@ export function App() {
     if (guestMode) {
       guestBatch(unreadIds, "read");
       syncGuest();
-      notify(`已在本机把 ${unreadIds.length} 条标为已读`);
+      notify(`Marked ${unreadIds.length} local items as read`);
       return;
     }
     await fetch(isPublicSite ? "/api/me/items/batch" : "/api/items/batch", {
@@ -680,12 +680,12 @@ export function App() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ ids: unreadIds, action: "read" }),
     });
-    notify(`已将本页 ${unreadIds.length} 条标为已读`);
+    notify(`Marked ${unreadIds.length} items on this page as read`);
     items.reload();
     stats.reload();
   }, [items, stats, notify, guestMode, isPublicSite, syncGuest]);
 
-// 访客本地隐藏 / 收藏 / 已读与本地屏蔽词在客户端生效；登录用户由服务端按 user_item_states 过滤
+// 访客本地隐藏 / starred / Readand本地Blocklist在客户端生效; Log in用户由服务端按 user_item_states 过滤
   const visible = (guestMode
     ? (items.data?.items ?? []).map((i) => ({
         ...i,
@@ -707,28 +707,28 @@ export function App() {
     sources: enabledSources.filter((s) => groupOfSource(s) === g.key),
   })).filter((g) => g.sources.length > 0);
 
-  // 公开区显示「资源流 / 今日热点 / 每日精选」，其余 Tab 只有进管理区后才出现
+  // 公开区显示"Feed / Today's Hot / Daily Digest", 其余 Tab 只有进Admin后才出现
   const tabs: { key: Tab | "admin"; label: string; icon: typeof Activity; badge?: number }[] = [
-    { key: "feed", label: "资源流", icon: Activity },
-    { key: "hot", label: "今日热点", icon: Flame },
-    { key: "digest", label: "每日精选", icon: Radar },
-    ...(me ? [{ key: "me" as Tab, label: "我的", icon: User }] : []),
+    { key: "feed", label: "Feed", icon: Activity },
+    { key: "hot", label: "Today's Hot", icon: Flame },
+    { key: "digest", label: "Daily Digest", icon: Radar },
+    ...(me ? [{ key: "me" as Tab, label: "Me", icon: User }] : []),
     ...(!adminReady && me
       ? [
-          { key: "rules" as Tab, label: "我的订阅与屏蔽", icon: ShieldBan, badge: stats.data?.totals.blockRules },
-          { key: "push" as Tab, label: "我的推送规则", icon: Zap, badge: push.data?.stats.queued },
+          { key: "rules" as Tab, label: "My Subscriptions & Blocklist", icon: ShieldBan, badge: stats.data?.totals.blockRules },
+          { key: "push" as Tab, label: "My Push Rules", icon: Zap, badge: push.data?.stats.queued },
         ]
       : []),
     ...(adminReady
       ? [
-          { key: "rules" as Tab, label: "订阅与屏蔽", icon: ShieldBan, badge: stats.data?.totals.blockRules },
-          { key: "push" as Tab, label: "推送规则", icon: Zap, badge: push.data?.stats.queued },
-          { key: "ai" as Tab, label: "AI 引擎", icon: Bot },
-          { key: "ops" as Tab, label: "数据源运维", icon: Wrench },
+          { key: "rules" as Tab, label: "Subscriptions & Blocklist", icon: ShieldBan, badge: stats.data?.totals.blockRules },
+          { key: "push" as Tab, label: "Push Rules", icon: Zap, badge: push.data?.stats.queued },
+          { key: "ai" as Tab, label: "AI Engine", icon: Bot },
+          { key: "ops" as Tab, label: "Source Ops", icon: Wrench },
         ]
       : me
         ? []
-        : [{ key: "admin" as const, label: "管理区", icon: Lock }]),
+        : [{ key: "admin" as const, label: "Admin", icon: Lock }]),
   ];
 
   const handleTab = (key: Tab | "admin") => {
@@ -743,14 +743,14 @@ export function App() {
   const exportUrl = "/api/export?format=md&" + query.replace(/limit=\d+/, "limit=300");
 
 
-  // 说明/RSS 入口：桌面侧栏与移动端品牌行共用同一份按钮，避免复制两份标记
+  // 说明/RSS 入口: 桌面侧栏and移动端品牌行shared同一份按钮, 避免Copy两份标记
   const helpRssNode = (
     <>
       <button
         type="button"
         onClick={() => setWelcomeOpen(true)}
         className={ICON_BTN}
-        title="站点说明与使用提示"
+        title="About this site & tips"
       >
         <BookOpen size={14} />
       </button>
@@ -758,28 +758,28 @@ export function App() {
         type="button"
         onClick={() => setRssOpen(true)}
         className={ICON_BTN}
-        title="RSS 订阅地址"
+        title="RSS feed URLs"
       >
         <Globe2 size={14} />
       </button>
     </>
   );
 
-  // 主仓库入口：GitHub 图标，移动端品牌行与桌面侧栏都用它
+  // 主仓库入口: GitHub 图标, 移动端品牌行and桌面侧栏都用它
   const githubNode = (
     <a
       href={REPO_URL}
       target="_blank"
       rel="noreferrer"
       className={ICON_BTN}
-      title="主仓库 · GitHub"
-      aria-label="GitHub 主仓库"
+      title="Main repo · GitHub"
+      aria-label="GitHub main repo"
     >
       <Github size={14} />
     </a>
   );
 
-  // 账号态：移动端放进导航行右侧，桌面端留在侧栏第二行
+  // account态: 移动端放进导航行右侧, 桌面端留在侧栏第二行
   const accountNode = me ? (
     <div className="flex min-w-0 items-center gap-1">
       {me.avatarUrl ? (
@@ -791,7 +791,7 @@ export function App() {
       )}
       <span
         className="hidden min-w-0 truncate text-[11.5px] font-medium text-ink-800 sm:inline"
-        title={`${me.name ?? me.username} · LINUX DO 信任等级 ${me.trustLevel}`}
+        title={`${me.name ?? me.username} · LINUX DO trust level ${me.trustLevel}`}
       >
         {me.name ?? me.username}
       </span>
@@ -799,7 +799,7 @@ export function App() {
         type="button"
         onClick={() => void logout()}
         className="shrink-0 rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-900"
-        title="退出登录"
+        title="Log out"
       >
         <LogOut size={12} />
       </button>
@@ -812,26 +812,26 @@ export function App() {
         setAuthOpen(true);
       }}
       className="inline-flex shrink-0 items-center gap-1 rounded-md bg-ink-950 px-2 py-1 text-[11.5px] font-medium whitespace-nowrap text-white hover:bg-brand-hover"
-      title="用 LINUX DO 登录"
+      title="Log in with LINUX DO"
     >
-      <User size={12} /> 登录
+      <User size={12} /> Log in
     </button>
   ) : null;
 
-  // 快捷视图 + 数据源树：桌面在侧栏常驻，移动端折进「筛选」面板里
+  // Quick views + Sources树: 桌面在侧栏常驻, 移动端折进"Filters"面板里
   const sourcePanelNode = (
     <>
       <div className="pt-1">
         <div className="mb-1.5 flex items-center justify-between px-2">
-          <span className="text-[11px] font-medium text-ink-400">快捷视图</span>
+          <span className="text-[11px] font-medium text-ink-400">Quick views</span>
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={resetFilters}
               className="inline-flex items-center gap-0.5 text-[11px] font-medium text-accent hover:underline"
-              title="清除全部筛选条件"
+              title="Clear all filters"
             >
-              <RotateCcw size={10} /> 清除 {activeFilterCount}
+              <RotateCcw size={10} /> clear {activeFilterCount}
             </button>
           )}
         </div>
@@ -857,13 +857,13 @@ export function App() {
 
       <div className="border-t border-ink-200 pt-3">
         <div className="mb-1.5 flex items-center justify-between px-2">
-          <span className="text-[11px] font-medium text-ink-400">数据源</span>
+          <span className="text-[11px] font-medium text-ink-400">Sources</span>
           <button
             type="button"
             onClick={() => setShowAllSources((v) => !v)}
             className="text-[11px] text-ink-400 hover:text-ink-700"
           >
-            {showAllSources ? "隐藏禁用" : "显示全部"}
+            {showAllSources ? "Hide disabled" : "Show all"}
           </button>
         </div>
         <button
@@ -876,7 +876,7 @@ export function App() {
               : "font-medium text-ink-600 hover:bg-canvas-subtle/60")
           }
         >
-          全部来源
+          All sources
         </button>
         {grouped.map((g) => {
           const collapsed = collapsedGroups[g.key];
@@ -906,7 +906,7 @@ export function App() {
                           : "text-ink-600 hover:bg-canvas-subtle/60") +
                         (s.enabled ? "" : " opacity-45")
                       }
-                      title={s.id + " · 采集周期 " + formatInterval(s.interval_sec)}
+                      title={s.id + " · interval " + formatInterval(s.interval_sec)}
                     >
                       <span className="truncate">{s.name}</span>
                       <span className="ml-1.5 shrink-0 font-mono text-[11px] tabular-nums text-ink-400">{s.items}</span>
@@ -923,30 +923,30 @@ export function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface lg:flex-row">
-      {/* 左侧连续导轨（移动端为顶部收拢区） */}
+      {/* 左侧连续导轨 (移动端为顶部收拢区) */}
       <aside className="w-full shrink-0 border-b border-ink-200 bg-canvas/70 px-3.5 py-3 lg:flex lg:w-[240px] lg:flex-col lg:gap-4 lg:border-r lg:border-b-0 lg:bg-canvas lg:px-3 lg:py-4">
-        {/* 品牌行：说明/RSS/GitHub/导出/刷新 全部收进这一行，省掉整条第二栏 */}
+        {/* 品牌行: 说明/RSS/GitHub/Export/Refresh All收进这一行, 省掉整items第二栏 */}
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
-            <h1 className="text-[14.5px] font-semibold tracking-tight text-ink-950">资源雷达</h1>
+            <h1 className="text-[14.5px] font-semibold tracking-tight text-ink-950">Resource Radar</h1>
           </div>
           <span className="hidden font-mono text-[11px] tabular-nums text-ink-400 lg:inline">
-            {stats.data?.totals.aiKept ?? "—"} 精选
+            {stats.data?.totals.aiKept ?? "—"} picks
           </span>
           <div className="flex items-center gap-1 lg:hidden">
             {helpRssNode}
             {githubNode}
-            <a href={exportUrl} className={ICON_BTN} title="按当前筛选导出 Markdown">
+            <a href={exportUrl} className={ICON_BTN} title="Export current view as Markdown">
               <Download size={14} />
             </a>
-            <button type="button" onClick={refreshAll} className={ICON_BTN} title="刷新数据">
+            <button type="button" onClick={refreshAll} className={ICON_BTN} title="Refresh data">
               <RefreshCw size={14} className={items.loading ? "animate-spin" : ""} />
             </button>
           </div>
         </div>
 
-        {/* 桌面侧栏第二行：说明/RSS + 账号；移动端这两个入口已分别并入品牌行与导航行 */}
+        {/* 桌面侧栏第二行: 说明/RSS + account; 移动端这两个入口已分别并入品牌行and导航行 */}
         <div className="mt-2 hidden items-center gap-1 px-1 lg:mt-0 lg:flex">
           {helpRssNode}
           {githubNode}
@@ -955,29 +955,29 @@ export function App() {
 
         {guestMode && (guest.hidden.length > 0 || guest.starred.length > 0 || guest.read.length > 0) && (
           <div className="mt-2 rounded-md border border-ink-200 bg-surface-hover px-2.5 py-1.5 text-[11px] leading-relaxed text-ink-600">
-            本机偏好：收藏 {guest.starred.length} · 已读 {guest.read.length} · 已关闭 {guest.hidden.length}
+            Local: starred {guest.starred.length} · read {guest.read.length} · hidden {guest.hidden.length}
             {bootData?.loginEnabled && (
               <button
                 type="button"
                 onClick={async () => {
                   const r = await importGuestToAccount(guest);
                   if (r.ok) {
-                    notify(`已合并 ${r.imported} 条偏好到账号`);
+                    notify(`Merged ${r.imported} preferences into your account`);
                     syncGuest();
                     items.reload();
                     stats.reload();
                   } else {
-                    notify(r.error ?? "合并失败");
+                    notify(r.error ?? "Merge failed");
                   }
                 }}
                 className="ml-1 font-medium text-accent hover:underline"
               >
-                登录后合并
+                Merge after login
               </button>
             )}
           </div>
         )}
-        {/* 搜索框（/ 快捷键聚焦） */}
+        {/* 搜索框 (/ 快捷键聚焦) */}
         <div className="relative mt-2.5 lg:mt-0">
           <Search size={14} className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-ink-400" />
           <input
@@ -994,7 +994,7 @@ export function App() {
                 }
               }
             }}
-            placeholder="搜索福利、兑换码…"
+            placeholder="Search freebies, codes…"
             className="h-8 w-full rounded-md border border-ink-200 bg-surface pr-8 pl-8 text-[12.5px] text-ink-950 transition-colors outline-none placeholder:text-ink-400 focus:border-accent"
           />
           {search ? (
@@ -1005,7 +1005,7 @@ export function App() {
                 setDebounced("");
               }}
               className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
-              title="清空搜索"
+              title="Clear search"
             >
               <X size={12} />
             </button>
@@ -1016,7 +1016,7 @@ export function App() {
           )}
         </div>
 
-        {/* 导航：手机横向可滚 + 右侧账号，桌面纵列无边框 */}
+        {/* 导航: 手机横向可滚 + 右侧account, 桌面纵列无边框 */}
         <div className="-mx-3.5 mt-2.5 flex items-center gap-1.5 px-3.5 pb-0.5 lg:mx-0 lg:mt-0 lg:block lg:px-0 lg:pb-0">
           <nav className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:block lg:flex-none lg:space-y-0.5 lg:overflow-visible">
           {tabs.slice(0, 3).map((t) => (
@@ -1049,7 +1049,7 @@ export function App() {
           ))}
           <div className="mx-1 h-4 w-px shrink-0 self-center bg-ink-200 lg:hidden" />
           <div className="hidden px-2.5 pt-3 pb-1 text-[11px] font-medium text-ink-400 lg:block">
-            管理
+            Admin
           </div>
           {tabs.slice(3).map((t) => (
             <button
@@ -1082,10 +1082,10 @@ export function App() {
             </button>
           ))}
           </nav>
-          {/* 移动端账号入口：贴着导航右侧，不单独占一行 */}
+          {/* 移动端account入口: 贴着导航右侧, 不单独占一行 */}
           <div className="shrink-0 lg:hidden">{accountNode}</div>
         </div>
-        {/* 场景预设 & 数据源：桌面侧栏常驻，移动端折进主区「筛选」面板 */}
+        {/* 场景预设 & Sources: 桌面侧栏常驻, 移动端折进主区"Filters"面板 */}
         {tab === "feed" && (
           <div className="mt-3 hidden lg:mt-0 lg:block">
             <div className="space-y-4">{sourcePanelNode}</div>
@@ -1119,7 +1119,7 @@ export function App() {
               </div>
             ) : (
               <span className="font-semibold text-ink-950">
-                {tabs.find((t) => t.key === tab)?.label ?? "管理区"}
+                {tabs.find((t) => t.key === tab)?.label ?? "Admin"}
               </span>
             )}
           </div>
@@ -1130,26 +1130,26 @@ export function App() {
             </span>
             <span className="text-ink-300" aria-hidden="true">·</span>
             <span className="font-mono tabular-nums">
-              含码 <strong className="font-semibold text-ink-900">{stats.data?.totals.withCodes ?? "—"}</strong>
+              Codes <strong className="font-semibold text-ink-900">{stats.data?.totals.withCodes ?? "—"}</strong>
             </span>
             {(stats.data?.totals.aiRejected ?? 0) > 0 && (
               <>
                 <span className="text-ink-300" aria-hidden="true">·</span>
-                <span>已滤 {stats.data?.totals.aiRejected} 条水帖</span>
+                <span>Filtered {stats.data?.totals.aiRejected} noise items</span>
               </>
             )}
             <a
               href={exportUrl}
               className="ml-1 inline-flex h-7 items-center gap-1.5 rounded-md border border-ink-200 bg-surface px-2.5 text-[12px] font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-950"
-              title="按当前筛选导出 Markdown"
+              title="Export current view as Markdown"
             >
-              <Download size={12} /> 导出
+              <Download size={12} /> Export
             </a>
             <button
               type="button"
               onClick={refreshAll}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-ink-200 bg-surface text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950"
-              title="刷新数据"
+              title="Refresh data"
             >
               <RefreshCw size={13} className={items.loading ? "animate-spin" : ""} />
             </button>
@@ -1158,11 +1158,11 @@ export function App() {
 
         {/* 主内容区 */}
         <main className={tab === "feed" ? "min-w-0 flex-1" : "min-w-0 flex-1 px-3.5 py-3.5 sm:px-6 sm:py-5"}>
-          {/* 懒加载的面板首次进入时给一个轻量占位，避免整页闪白 */}
+          {/* 懒加载的面板首次进入时给一个轻量占位, 避免整页闪白 */}
           <Suspense
             fallback={
               <div className="flex items-center justify-center gap-1.5 px-6 py-10 text-[12.5px] text-ink-400">
-                <Loader2 size={13} className="animate-spin" /> 载入中…
+                <Loader2 size={13} className="animate-spin" /> Loading…
               </div>
             }
           >
@@ -1170,10 +1170,10 @@ export function App() {
             <AdminGate protectedMode={protectedMode} onAuthChange={setAdminAuthed}>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  { key: "rules" as Tab, label: "订阅与屏蔽", desc: "关键词订阅、屏蔽词防火墙", icon: ShieldBan },
-                  { key: "push" as Tab, label: "推送规则", desc: "推送时机、阈值、格式与免打扰", icon: Zap },
-                  { key: "ai" as Tab, label: "AI 引擎", desc: "规则初筛、审核模型、提示词与补审", icon: Bot },
-                  { key: "ops" as Tab, label: "数据源运维", desc: "采集开关、间隔、数据清理", icon: Wrench },
+                  { key: "rules" as Tab, label: "Subscriptions & Blocklist", desc: "Keyword subscriptions & blocklist firewall", icon: ShieldBan },
+                  { key: "push" as Tab, label: "Push Rules", desc: "Push timing, thresholds, format, and quiet hours", icon: Zap },
+                  { key: "ai" as Tab, label: "AI Engine", desc: "Rule pre-filter, review model, prompts, and backfill", icon: Bot },
+                  { key: "ops" as Tab, label: "Source Ops", desc: "Collection toggles, intervals, data retention", icon: Wrench },
                 ].map((entry) => (
                   <button
                     key={entry.key}
@@ -1192,7 +1192,7 @@ export function App() {
 
           {tab === "feed" && (
             <>
-              {/* 移动端：频道胶囊 + 筛选/视图压成一行，省掉两条整行按钮 */}
+              {/* 移动端: 频道胶囊 + Filters/视图压成一行, 省掉两items整行按钮 */}
               <div className="flex items-stretch border-b border-ink-100 bg-surface lg:hidden">
                 <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-3.5 py-1.5">
                   {PRIMARY_CHANNELS.map((p) => (
@@ -1213,7 +1213,7 @@ export function App() {
                   ))}
                 </div>
                 <div className="relative flex shrink-0 items-center gap-1 border-l border-ink-100 bg-surface px-2">
-                  {/* 左侧渐隐，避免横向滚动的频道胶囊被硬切一半 */}
+                  {/* 左侧渐隐, 避免横向滚动的频道胶囊被硬切一半 */}
                   <span className="pointer-events-none absolute inset-y-0 -left-4 w-4 bg-gradient-to-l from-surface to-transparent" aria-hidden="true" />
                   <button
                     type="button"
@@ -1224,8 +1224,8 @@ export function App() {
                         ? "border-ink-950 bg-ink-950 text-white"
                         : "border-ink-200 bg-surface text-ink-600")
                     }
-                    title="筛选条件"
-                    aria-label="筛选条件"
+                    title="Filters"
+                    aria-label="Filters"
                   >
                     <SlidersHorizontal size={14} />
                     {activeFilterCount > 0 && (
@@ -1238,19 +1238,19 @@ export function App() {
                     type="button"
                     onClick={() => updateViewMode(viewMode === "compact" ? "grid2" : "compact")}
                     className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-ink-200 bg-surface text-ink-600 transition-colors hover:text-ink-950"
-                    title={viewMode === "compact" ? "切到卡片网格" : "切到紧凑列表"}
-                    aria-label="切换视图"
+                    title={viewMode === "compact" ? "Switch to card grid" : "Switch to compact list"}
+                    aria-label="Switch view"
                   >
                     {viewMode === "compact" ? <LayoutGrid size={14} /> : <AlignJustify size={14} />}
                   </button>
                 </div>
               </div>
-              {/* 快捷子分类胶囊条：当前频道热门子类目一键直达，不用再进二级下拉找 */}
+              {/* 快捷子Category胶囊items: 当前频道热门子类目一键直达, 不用再进二级下拉找 */}
               {(() => {
                 const countMap = new Map((stats.data?.byCategory ?? []).map((c) => [c.category ?? "other", c.n]));
                 const allowed = categoriesForPreset(preset);
                 const ordered = [...allowed].sort((a, b) => (countMap.get(b) ?? 0) - (countMap.get(a) ?? 0));
-                // 只挂真的有内容的分类（外加已选中的，方便一键取消）；全空时退回频道默认顺序
+                // 只挂真的有内容的Category (外加已选中的, 方便一键Cancel); 全空时退回频道默认顺序
                 const withItems = ordered.filter((key) => (countMap.get(key) ?? 0) > 0 || categories.includes(key));
                 const quickCats = (withItems.length ? withItems : ordered).slice(0, 10);
                 return (
@@ -1266,7 +1266,7 @@ export function App() {
                           : "text-ink-500 hover:bg-ink-100 hover:text-ink-900")
                       }
                     >
-                      全部{preset === "news" ? "要闻" : preset === "info" ? "资讯" : "分类"}
+                      All{preset === "news" ? "Top News" : preset === "info" ? "News" : "Category"}
                     </button>
                     {quickCats.map((key) => {
                       const n = countMap.get(key) ?? 0;
@@ -1299,18 +1299,18 @@ export function App() {
                       );
                     })}
                     </div>
-                    {/* 移动端统计并进这一行右端，不再单占一条 */}
+                    {/* 移动端统计并进这一行右端, 不再单占一items */}
                     <div className="relative flex shrink-0 items-center border-l border-ink-100 bg-surface px-2.5 text-[11px] whitespace-nowrap text-ink-500 sm:hidden">
                       <span className="pointer-events-none absolute inset-y-0 -left-4 w-4 bg-gradient-to-l from-surface to-transparent" aria-hidden="true" />
-                      共 <strong className="ml-1 font-mono font-semibold tabular-nums text-ink-900">{items.data?.total ?? 0}</strong>
-                      <span className="ml-0.5">条</span>
-                      {preset === "verified" && <span className="ml-1 font-medium text-deal">· 验真</span>}
+                      Total <strong className="ml-1 font-mono font-semibold tabular-nums text-ink-900">{items.data?.total ?? 0}</strong>
+                      <span className="ml-0.5">items</span>
+                      {preset === "verified" && <span className="ml-1 font-medium text-deal">· verified</span>}
                     </div>
                   </div>
                 );
               })()}
 
-              {/* 40px 细线筛选条（根据当前频道自适应隐藏无关的价格/方式筛选） */}
+              {/* 40px 细线Filtersitems (根据当前频道自适应隐藏无关的价格/方式Filters) */}
               <div
                 className={
                   "border-b border-ink-200 bg-[#FCFCFD] px-3.5 py-2.5 sm:px-6 sm:py-2 " +
@@ -1318,7 +1318,7 @@ export function App() {
                 }
               >
                 <div className="flex flex-wrap items-center gap-1">
-                  {/* 分类多选浮层（展开查看全部分类） */}
+                  {/* Category多选浮层 (展开查看AllCategory) */}
                   <div className="relative" ref={catRef}>
                     <button
                       type="button"
@@ -1332,24 +1332,24 @@ export function App() {
                     >
                       <span>
                         {categories.length === 0
-                          ? "分类"
+                          ? "Category"
                           : categories.length === 1
-                            ? `分类：${categoryLabelForPreset(categories[0]!, preset)}`
-                            : `分类：已选 ${categories.length} 项`}
+                            ? `Category: ${categoryLabelForPreset(categories[0]!, preset)}`
+                            : `Categories: ${categories.length} selected`}
                       </span>
                       <ChevronDown size={12} />
                     </button>
                     {catOpen && (
                       <div className="pop-enter panel absolute top-full left-0 z-40 mt-1.5 w-[260px] p-2.5 shadow-lg">
                         <div className="mb-2 flex items-center justify-between text-[11px] text-ink-500">
-                          <span>{preset === "news" ? "要闻栏目（支持多选）" : preset === "info" ? "行业资讯栏目（支持多选）" : preset === "deal" ? "好价分类（支持多选）" : preset === "opensource" ? "开源方向（支持多选）" : "福利分类（支持多选）"}</span>
+                          <span>{preset === "news" ? "Top news sections (multi-select)" : preset === "info" ? "Industry news sections (multi-select)" : preset === "deal" ? "Deal categories (multi-select)" : preset === "opensource" ? "Open-source areas (multi-select)" : "Freebie categories (multi-select)"}</span>
                           {categories.length > 0 && (
                             <button
                               type="button"
                               onClick={() => setCategories([])}
                               className="font-medium text-accent hover:underline"
                             >
-                              清空
+                              Clear
                             </button>
                           )}
                         </div>
@@ -1392,15 +1392,15 @@ export function App() {
                     )}
                   </div>
 
-                  {/* 内容形态筛选 */}
+                  {/* KindFilters */}
                   <select
                     value={kindFilter}
                     onChange={(e) => setKindFilter(e.target.value)}
                     className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                    title="内容形态"
+                    title="Kind"
                   >
-                    <option value="auto">形态：{preset === "verified" ? "真福利" : preset === "deal" ? "好价" : preset === "opensource" ? "开源" : preset === "news" ? "要闻" : preset === "info" ? "资讯" : "全部"}</option>
-                    <option value="all">形态：全部（含其它）</option>
+                    <option value="auto">Kind: {preset === "verified" ? "Verified Freebies" : preset === "deal" ? "Deals" : preset === "opensource" ? "Open Source" : preset === "news" ? "Top News" : preset === "info" ? "News" : "All"}</option>
+                    <option value="all">Kind: all (incl. other)</option>
                     {KIND_ORDER.map((k) => (
                       <option key={k} value={k}>
                         {KIND_LABEL[k]}
@@ -1408,16 +1408,16 @@ export function App() {
                     ))}
                   </select>
 
-                  {/* 语言筛选 */}
+                  {/* 语言Filters */}
                   <select
                     value={lang}
                     onChange={(e) => setLang(e.target.value as "all" | "zh" | "en")}
                     className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                    title="按标题语言筛选"
+                    title="Filter by title language"
                   >
-                    <option value="all">语言：全部</option>
-                    <option value="zh">仅看中文</option>
-                    <option value="en">仅看英文</option>
+                    <option value="all">Language: all</option>
+                    <option value="zh">Chinese only</option>
+                    <option value="en">English only</option>
                   </select>
 
                   {preset !== "news" && preset !== "info" && preset !== "opensource" && (
@@ -1426,34 +1426,34 @@ export function App() {
                         value={priceCap}
                         onChange={(e) => setPriceCap(e.target.value)}
                         className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                        title="价格上限"
+                        title="Price cap"
                       >
                         <option value="auto">
-                          价格：不限
+                          Price: any
                         </option>
-                        <option value="all">价格：不限</option>
-                        <option value="free">仅白嫖 (0 元)</option>
-                        <option value="5">≤ 5 元</option>
-                        <option value="10">≤ 10 元</option>
-                        <option value="30">≤ 30 元</option>
-                        <option value="100">≤ 100 元</option>
+                        <option value="all">Price: any</option>
+                        <option value="free">Free only (0)</option>
+                        <option value="5">≤ 5</option>
+                        <option value="10">≤ 10</option>
+                        <option value="30">≤ 30</option>
+                        <option value="100">≤ 100</option>
                       </select>
 
                       <select
                         value={obtain}
                         onChange={(e) => setObtain(e.target.value)}
                         className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                        title={OBTAIN_HINT[obtain] ?? "获取方式"}
+                        title={OBTAIN_HINT[obtain] ?? "Obtain mode"}
                       >
                         <option value="auto">
-                          方式：{preset === "verified" ? "白嫖+条件" : "不限"}
+                          Obtain: {preset === "verified" ? "Free+conditional" : "Any"}
                         </option>
-                        <option value="all">方式：全部（含抽奖/试用）</option>
-                        <option value="free">仅直接白嫖</option>
-                        <option value="conditional">有条件领取</option>
-                        <option value="lottery">抽奖/开奖</option>
-                        <option value="trial">免费试用</option>
-                        <option value="promo">推广/引流</option>
+                        <option value="all">Obtain: all (incl. giveaways/trials)</option>
+                        <option value="free">Free only</option>
+                        <option value="conditional">Conditional</option>
+                        <option value="lottery">Giveaway</option>
+                        <option value="trial">Free trial</option>
+                        <option value="promo">Promo</option>
                       </select>
                     </>
                   )}
@@ -1462,41 +1462,41 @@ export function App() {
                     value={range}
                     onChange={(e) => setRange(e.target.value)}
                     className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                    title="发布时间窗口"
+                    title="Published window"
                   >
                     <option value="auto">
-                      时间：{preset === "verified" ? "7天内" : "不限"}
+                      Time: {preset === "verified" ? "Within 7 days" : "Any"}
                     </option>
-                    <option value="all">时间：不限</option>
-                    <option value="1d">24 小时内</option>
-                    <option value="3d">3 天内</option>
-                    <option value="7d">一周内</option>
-                    <option value="30d">一个月内</option>
+                    <option value="all">Time: any</option>
+                    <option value="1d">Within 24h</option>
+                    <option value="3d">Within 3 days</option>
+                    <option value="7d">Within a week</option>
+                    <option value="30d">Within a month</option>
                   </select>
 
                   <select
                     value={minScore}
                     onChange={(e) => setMinScore(e.target.value)}
                     className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                    title="最低评分"
+                    title="Min score"
                   >
-                    <option value="all">评分：不限</option>
-                    <option value="50">≥ 50 分</option>
-                    <option value="60">≥ 60 分</option>
-                    <option value="70">≥ 70 分</option>
+                    <option value="all">Score: any</option>
+                    <option value="50">≥ 50 pts</option>
+                    <option value="60">≥ 60 pts</option>
+                    <option value="70">≥ 70 pts</option>
                   </select>
 
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value)}
                     className="h-7 rounded-md border border-ink-200 bg-surface px-1.5 text-[11.5px] text-ink-700 outline-none focus:border-accent"
-                    title="排序方式"
+                    title="Sort by"
                   >
-                    <option value="newest">最新</option>
-                    <option value="score">高分</option>
-                    <option value="oldest">最早</option>
-                    <option value="expiring">快截止</option>
-                    {preset !== "news" && preset !== "info" && <option value="price_asc">低价</option>}
+                    <option value="newest">Latest</option>
+                    <option value="score">Top score</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="expiring">Ending soon</option>
+                    {preset !== "news" && preset !== "info" && <option value="price_asc">Cheapest</option>}
                   </select>
 
                   <button
@@ -1509,7 +1509,7 @@ export function App() {
                         : "border-ink-200 bg-surface text-ink-600 hover:border-ink-300")
                     }
                   >
-                    未读
+                    Unread
                   </button>
 
                   {visible.some((i) => !i.read) && (
@@ -1517,9 +1517,9 @@ export function App() {
                       type="button"
                       onClick={() => void markVisibleRead()}
                       className="inline-flex h-7 items-center gap-1 rounded-md border border-ink-200 bg-surface px-2 text-[12px] font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950 active:scale-[0.97]"
-                      title="把当前列表里的未读条目一次性标为已读"
+                      title="Mark all unread items in the current list as read"
                     >
-                      <CheckCheck size={12} /> 标已读
+                      <CheckCheck size={12} /> Mark read
                     </button>
                   )}
 
@@ -1529,28 +1529,28 @@ export function App() {
                       onClick={resetFilters}
                       className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-accent hover:bg-brand-subtle"
                     >
-                      <RotateCcw size={11} /> 重置 ({activeFilterCount})
+                      <RotateCcw size={11} /> Reset ({activeFilterCount})
                     </button>
                   )}
 
-                  {/* 右端统计与视图切换 */}
+                  {/* 右端统计and视图切换 */}
                   <div className="ml-auto hidden shrink-0 items-center gap-2 sm:flex">
                     <span className="text-[12px] text-ink-500">
                       {items.loading ? (
                         <span className="inline-flex items-center gap-1">
-                          <Loader2 size={11} className="animate-spin" /> 加载中…
+                          <Loader2 size={11} className="animate-spin" /> Loading…
                         </span>
                       ) : (
                         <>
-                          共 <strong className="font-mono font-semibold tabular-nums text-ink-900">{items.data?.total ?? 0}</strong> 条
+                          Total <strong className="font-mono font-semibold tabular-nums text-ink-900">{items.data?.total ?? 0}</strong> items
                         </>
                       )}
                     </span>
                     <div className="flex items-center gap-0.5 rounded-md border border-ink-200 bg-surface p-0.5">
                       {[
-                        { key: "compact" as const, icon: AlignJustify, label: "单行紧凑列表", text: "紧凑" },
-                        { key: "grid2" as const, icon: LayoutGrid, label: "双列图文卡片", text: "2列" },
-                        { key: "grid3" as const, icon: LayoutGrid, label: "三列图文卡片", text: "3列" },
+                        { key: "compact" as const, icon: AlignJustify, label: "Compact list", text: "Compact" },
+                        { key: "grid2" as const, icon: LayoutGrid, label: "2-column cards", text: "2-col" },
+                        { key: "grid3" as const, icon: LayoutGrid, label: "3-column cards", text: "3-col" },
                       ].map((v) => (
                         <button
                           key={v.key}
@@ -1569,14 +1569,14 @@ export function App() {
                     </div>
                   </div>
                 </div>
-                {/* 移动端：快捷视图与数据源折进这个面板，排在筛选条之后 */}
+                {/* 移动端: Quick viewsandSources折进这个面板, 排在Filtersitems之后 */}
                 {tab === "feed" && (
                   <div className="mt-2.5 space-y-3 border-t border-ink-200 pt-2.5 lg:hidden">{sourcePanelNode}</div>
                 )}
 
                 {activeFilterCount > 0 && (
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-ink-100 pt-2 text-[11.5px]">
-                    <span className="text-ink-400">当前条件：</span>
+                    <span className="text-ink-400">Current filters: </span>
                     {debounced && (
                       <button
                         type="button"
@@ -1586,7 +1586,7 @@ export function App() {
                         }}
                         className="rounded bg-ink-100 px-2 py-0.5 text-ink-700 hover:bg-ink-200"
                       >
-                        搜索：{debounced} ×
+                        Search: {debounced} ×
                       </button>
                     )}
                     {source && (
@@ -1595,7 +1595,7 @@ export function App() {
                         onClick={() => setSource("")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        源：{sourceName(source)} ×
+                        Source: {sourceName(source)} ×
                       </button>
                     )}
                     {categories.map((cat) => (
@@ -1605,7 +1605,7 @@ export function App() {
                         onClick={() => setCategories((cur) => cur.filter((x) => x !== cat))}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        分类：{categoryLabelForPreset(cat, preset)} ×
+                        Category: {categoryLabelForPreset(cat, preset)} ×
                       </button>
                     ))}
                     {lang !== "all" && (
@@ -1614,7 +1614,7 @@ export function App() {
                         onClick={() => setLang("all")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        语言：{lang === "zh" ? "仅看中文" : "仅看英文"} ×
+                        Language: {lang === "zh" ? "Chinese only" : "English only"} ×
                       </button>
                     )}
                     {priceCap !== "auto" && (
@@ -1623,7 +1623,7 @@ export function App() {
                         onClick={() => setPriceCap("auto")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        价格：{priceCap === "all" ? "不限" : priceCap === "free" ? "仅白嫖" : `≤${priceCap}元`} ×
+                        Price: {priceCap === "all" ? "Any" : priceCap === "free" ? "Free only" : `≤${priceCap}`} ×
                       </button>
                     )}
                     {obtain !== "auto" && (
@@ -1632,7 +1632,7 @@ export function App() {
                         onClick={() => setObtain("auto")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        方式：{obtain === "all" ? "全部" : (OBTAIN_LABEL[obtain] ?? obtain)} ×
+                        Obtain: {obtain === "all" ? "All" : (OBTAIN_LABEL[obtain] ?? obtain)} ×
                       </button>
                     )}
                     {range !== "auto" && (
@@ -1641,7 +1641,7 @@ export function App() {
                         onClick={() => setRange("auto")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        时间：{range === "all" ? "不限" : range} ×
+                        Time: {range === "all" ? "Any" : range} ×
                       </button>
                     )}
                     {minScore !== "all" && (
@@ -1650,7 +1650,7 @@ export function App() {
                         onClick={() => setMinScore("all")}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        评分：≥{minScore} ×
+                        Score: ≥{minScore} ×
                       </button>
                     )}
                     {unreadOnly && (
@@ -1659,7 +1659,7 @@ export function App() {
                         onClick={() => setUnreadOnly(false)}
                         className="rounded bg-brand-subtle px-2 py-0.5 text-accent hover:bg-ink-200/70"
                       >
-                        仅未读 ×
+                        Unread only ×
                       </button>
                     )}
                   </div>
@@ -1669,7 +1669,7 @@ export function App() {
 
               {items.error && (
                 <div className="mx-3.5 my-3 rounded-lg border border-alert-border bg-alert-subtle p-4 text-[13px] text-alert sm:mx-6">
-                  加载失败：{items.error}
+                  Failed to load: {items.error}
                 </div>
               )}
 
@@ -1691,7 +1691,7 @@ export function App() {
                       {relatedOpen === item.id && relatedMap[item.id] ? (
                         <div className="pop-enter border-b border-ink-100 bg-surface-hover px-3.5 py-2 sm:px-6">
                           <div className="mb-1 text-[11px] font-medium text-ink-500">
-                            同一事件 / 福利的其他 {relatedMap[item.id]!.length} 条来源报道
+                            Same event / freebie — {relatedMap[item.id]!.length}  more source reports
                           </div>
                           <ul className="space-y-1">
                             {relatedMap[item.id]!.map((r) => (
@@ -1746,9 +1746,9 @@ export function App() {
               {!items.loading && !visible.length && (
                 <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
                   <Radar size={28} className="text-ink-300" />
-                  <div className="text-[15px] font-medium text-ink-900">当前条件下没有福利资源</div>
+                  <div className="text-[15px] font-medium text-ink-900">No freebies under current filters</div>
                   <p className="max-w-md text-[12.5px] leading-relaxed text-ink-500">
-                    试试把「常用场景」切到「全部收录」，或放宽价格上限；也可能是屏蔽词把结果挡掉了。
+                    Try switching "Quick views" to "All Items" or relaxing the price cap; a blocklist may also be hiding results. 
                   </p>
                   <button
                     type="button"
@@ -1758,7 +1758,7 @@ export function App() {
                     }}
                     className="mt-1 rounded-md bg-brand px-4 py-2 text-[12.5px] font-medium text-white hover:bg-brand-hover"
                   >
-                    清除全部筛选
+                    Clear all filters
                   </button>
                 </div>
               )}
@@ -1805,7 +1805,7 @@ export function App() {
                     return;
                   }
                 } catch {
-                  /* 回退到资源流 */
+                  /* 回退到Feed */
                 }
                 setTab("feed");
               }}
@@ -1821,11 +1821,11 @@ export function App() {
               onPickDate={setPickedDate}
               canAdmin={adminReady}
               onRunDaily={async () => {
-                notify("正在生成今日精选…");
+                notify("Generating today's digest…");
                 const res = await fetch("/api/digests/run", { method: "POST" });
                 const data = (await res.json().catch(() => ({}))) as { date?: string; count?: number; error?: string };
-                if (!res.ok) notify(data.error ?? "生成失败");
-                else notify(`已生成 ${data.count ?? 0} 条精选`);
+                if (!res.ok) notify(data.error ?? "Generation failed");
+                else notify(`Generated ${data.count ?? 0} digest items`);
                 digests.reload();
                 setPickedDate(res.ok && data.date ? data.date : null);
                 digestDetail.reload();
@@ -1836,11 +1836,11 @@ export function App() {
               onQuickBlock={setQuickBlock}
               onCopyCode={copyCode}
               onRunWeekly={async () => {
-                notify("正在汇总本周精选…");
+                notify("Generating this week's digest…");
                 const res = await fetch("/api/digests/weekly", { method: "POST" });
                 const data = (await res.json().catch(() => ({}))) as { date?: string; count?: number; error?: string; pushed?: boolean };
-                if (!res.ok) notify(data.error ?? "生成失败");
-                else notify(`周报已生成 ${data.count ?? 0} 条${data.pushed ? "，已发 Telegram" : ""}`);
+                if (!res.ok) notify(data.error ?? "Generation failed");
+                else notify(`Weekly digest generated: ${data.count ?? 0} items${data.pushed ? ", sent to Telegram" : ""}`);
                 digests.reload();
                 setPickedDate(res.ok && data.date ? data.date : null);
                 digestDetail.reload();
@@ -1874,7 +1874,7 @@ export function App() {
                 blockRules.reload();
                 items.reload();
                 stats.reload();
-                notify("已导入常见噪音屏蔽词");
+                notify("Imported common noise block words");
               }}
               onToggleRule={async (id, enabled) => {
                 await fetch((isPublicSite && !adminReady ? "/api/me/block-rules/" : "/api/block-rules/") + id, {
@@ -1892,7 +1892,7 @@ export function App() {
                 items.reload();
                 stats.reload();
                 setBlockedPreview(null);
-                notify("规则已删除，相关条目已恢复显示");
+                notify("Rule deleted; affected items are visible again");
               }}
               onLoadBlockedPreview={async () => {
                 const res = await fetch("/api/items?includeBlocked=1&limit=80&sort=newest");
@@ -1915,12 +1915,12 @@ export function App() {
                   body: JSON.stringify(p),
                 });
                 if (!res.ok) {
-                  notify("保存失败");
+                  notify("Save failed");
                   return;
                 }
                 push.reload();
                 setPushPreview(null);
-                notify("推送规则已保存");
+                notify("Push rules saved");
               }}
               onPreview={async () => {
                 const res = await fetch((pushBase ?? "/api/push") + "/preview?limit=6");
@@ -1929,14 +1929,14 @@ export function App() {
               onFlush={async () => {
                 const res = await fetch((pushBase ?? "/api/push") + "/flush", { method: "POST" });
                 const data = (await res.json().catch(() => ({}))) as { sent?: number; queued?: number };
-                notify(`已发送 ${data.sent ?? 0} 条，队列剩 ${data.queued ?? 0} 条`);
+                notify(`Sent ${data.sent ?? 0}, ${data.queued ?? 0} left in queue`);
                 push.reload();
                 pushLogs.reload();
                 setPushPreview(null);
               }}
               onTest={async () => {
                 const res = await fetch((pushBase ?? "/api/push") + "/test", { method: "POST" });
-                notify(res.ok ? "测试消息已发送到 Telegram" : "推送未启用或缺少凭据");
+                notify(res.ok ? "Test message sent to Telegram" : "Push disabled or credentials missing");
                 pushLogs.reload();
               }}
             />
@@ -1977,7 +1977,7 @@ export function App() {
               sourceName={sourceName}
               onCollectSource={async (id) => {
                 const isCookieSite = id === "zhihu-search" || id === "xhs-search" || id === "xiaoheihe-search";
-                notify(isCookieSite ? "正在通过 VPS Cookie 采集（约 15-40 秒）…" : "正在采集…");
+                notify(isCookieSite ? "Collecting via VPS cookies (about 15-40s)…" : "Collecting…");
                 const res = await fetch(`/api/sources/${id}/collect`, { method: "POST" });
                 const data = (await res.json().catch(() => ({}))) as {
                   ok?: boolean;
@@ -1985,9 +1985,9 @@ export function App() {
                   summary?: { inserted: number; fetched: number; status: string };
                 };
                 if (!res.ok || data.ok === false || data.summary?.status === "failed") {
-                  notify(data.error ?? "采集失败");
+                  notify(data.error ?? "Collection failed");
                 } else {
-                  notify(`完成：抓取 ${data.summary?.fetched ?? 0}，新增 ${data.summary?.inserted ?? 0}`);
+                  notify(`Done: fetched ${data.summary?.fetched ?? 0}, inserted ${data.summary?.inserted ?? 0}`);
                 }
                 refreshAll();
               }}
@@ -1998,7 +1998,7 @@ export function App() {
                   body: JSON.stringify({ enabled }),
                 });
                 sources.reload();
-                notify(enabled ? "已启用该源" : "已禁用该源");
+                notify(enabled ? "Source enabled" : "Source disabled");
               }}
               onChangeInterval={async (id, sec) => {
                 await fetch("/api/sources/" + id, {
@@ -2007,10 +2007,10 @@ export function App() {
                   body: JSON.stringify({ interval_sec: sec }),
                 });
                 sources.reload();
-                notify("采集周期已改为 " + formatInterval(sec));
+                notify("Interval changed to " + formatInterval(sec));
               }}
               onAddRss={async (name, url, intervalSec, kindHint, categoryHint) => {
-                notify("正在添加并试采…");
+                notify("Adding and test-collecting…");
                 const res = await fetch("/api/sources", {
                   method: "POST",
                   headers: { "content-type": "application/json" },
@@ -2020,9 +2020,9 @@ export function App() {
                   error?: string;
                   summary?: { fetched: number; inserted: number; status: string; error?: string };
                 };
-                if (!res.ok) notify(data.error ?? "添加失败");
-                else if (data.summary?.status === "failed") notify("已添加，但首次采集失败：" + (data.summary.error ?? ""));
-                else notify(`已添加，抓取 ${data.summary?.fetched ?? 0} 条，新增 ${data.summary?.inserted ?? 0}`);
+                if (!res.ok) notify(data.error ?? "Failed to add");
+                else if (data.summary?.status === "failed") notify("Added, but the first collection failed:" + (data.summary.error ?? ""));
+                else notify(`Added — fetched ${data.summary?.fetched ?? 0}, inserted ${data.summary?.inserted ?? 0}`);
                 refreshAll();
               }}
               onUpdateSource={async (id, patch) => {
@@ -2033,22 +2033,22 @@ export function App() {
                 });
                 const data = (await res.json().catch(() => ({}))) as { error?: string };
                 if (!res.ok) {
-                  notify(data.error ?? "保存失败");
+                  notify(data.error ?? "Save failed");
                   return false;
                 }
                 sources.reload();
-                notify("数据源配置已更新");
+                notify("Source config updated");
                 return true;
               }}
               onDeleteSource={async (id) => {
                 const res = await fetch("/api/sources/" + id, { method: "DELETE" });
                 const data = (await res.json().catch(() => ({}))) as { error?: string };
                 if (!res.ok) {
-                  notify(data.error ?? "删除失败");
+                  notify(data.error ?? "Delete failed");
                   return false;
                 }
                 refreshAll();
-                notify("已删除自定义数据源");
+                notify("Custom source deleted");
                 return true;
               }}
               onNotify={notify}
@@ -2058,9 +2058,9 @@ export function App() {
         </main>
 
         <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-ink-200 px-3.5 py-3 text-[11.5px] text-ink-400 sm:px-6">
-          <span>资源雷达 · 多源聚合 · AI 语义分流 · 所筛即所推</span>
+          <span>Resource Radar · Multi-source aggregation · AI semantic triage · Your filters are your pushes</span>
           <span className="font-mono tabular-nums">
-            {stats.data?.totals.active ?? 0} 条在库 · {stats.data?.totals.unread ?? 0} 条未读
+            {stats.data?.totals.active ?? 0} items in DB · {stats.data?.totals.unread ?? 0}  unread
           </span>
         </footer>
       </div>

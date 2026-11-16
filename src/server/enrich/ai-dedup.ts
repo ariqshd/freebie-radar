@@ -30,7 +30,7 @@ const DEDUP_SYSTEM_PROMPT = [
   "- 不同银行/合作商家/联名卡的各自活动（如「中国银行2233卡领B站会员」vs「B站全站送7天大会员」、或「阿里云送券」vs「腾讯云送券」）",
   "- 不同的特价 VPS / 不同的开源项目 / 不同的单品商品",
   "",
-  '只输出 JSON 数组，每个元素形如 {"index":0,"duplicateOfId":12345,"reason":"同为B站BLG夺冠送大会员"}；若无重复则 duplicateOfId 为 null。不要输出任何多余文字。',
+  'Return only a JSON array, elements like {"index":0,"duplicateOfId":12345,"reason":"same event: BLS championship membership giveaway"}; if there is no duplicate set duplicateOfId to null. Output no extra text.',
 ].join("\n");
 /**
  * AI 语义去重降级计数：模型不可用/超时/额度耗尽时，去重会静默退回纯规则，
@@ -167,7 +167,7 @@ export async function findSemanticDuplicatesWithAi(
       // 仅接受真实存在且不是未来候选的基准 ID（anchors 或同一批中 index 更小的候选）
       const earlierCandidate = candidates.slice(0, idx).some((prev) => prev.id === dupId);
       if (!validAnchorIds.has(dupId) && !(candidateIds.has(dupId) && earlierCandidate)) continue;
-      const reason = typeof row?.reason === "string" ? row.reason.trim().slice(0, 60) : "AI 语义去重";
+      const reason = typeof row?.reason === "string" ? row.reason.trim().slice(0, 60) : "AI semantic dedupe";
       out.set(idx, { index: idx, duplicateOfId: dupId, reason });
     }
   } catch (err) {
@@ -311,7 +311,7 @@ export async function filterPushDuplicatesWithAi<T extends DedupCandidate>(
   for (const c of candidates) {
     if (c.canonicalId != null && pushedCanonical.has(c.canonicalId)) {
       const targetId = pushedCanonical.get(c.canonicalId)!;
-      intercepted.push({ item: c, duplicateOfId: targetId, reason: "同聚类簇已推送过" });
+      intercepted.push({ item: c, duplicateOfId: targetId, reason: "same cluster already pushed" });
       continue;
     }
     afterRule.push(c);
@@ -339,7 +339,7 @@ export async function filterPushDuplicatesWithAi<T extends DedupCandidate>(
       continue;
     }
     if (item.canonicalId != null && keptCanonicalRoots.has(item.canonicalId)) {
-      intercepted.push({ item, duplicateOfId: item.canonicalId, reason: "同批同聚类重复" });
+      intercepted.push({ item, duplicateOfId: item.canonicalId, reason: "same-batch same-cluster duplicate" });
       continue;
     }
     if (item.canonicalId != null) keptCanonicalRoots.add(item.canonicalId);

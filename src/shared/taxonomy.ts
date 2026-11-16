@@ -1,14 +1,13 @@
 /**
- * 分类 / 内容形态 / 获取方式 / 频道（preset）的唯一定义源。
+ * Single source of truth for categories / content kinds / obtain modes / channels (presets).
  *
- * 以前同一份分类清单分散在 5 处（enrich 规则、推送白名单校验、AI 提示词、
- * 前端 label 表、数据源运维下拉），任一处加分类都要手工同步，漏一处就会出现
- * 「主页有这个小类，推送给不出 / 数据源兜底分类选不到」的错位。
- * 现在服务端与前端都从这里 import，加分类只改这一个文件。
+ * These definitions used to be duplicated in 5 places (enrich rules, push whitelist validation,
+ * AI prompts, frontend label tables, source-ops dropdowns); adding a category meant hand-syncing
+ * all of them and missing one caused drift. Server and frontend both import from here now.
  */
 
 /* ------------------------------------------------------------------ *
- * 分类（小类）
+ * Categories
  * ------------------------------------------------------------------ */
 
 export const CATEGORY_KEYS = [
@@ -44,96 +43,96 @@ export const CATEGORY_KEYS = [
 export type Category = (typeof CATEGORY_KEYS)[number];
 
 const CATEGORY_LABEL_BY_KEY = {
-  ai: "AI 额度",
-  cloud: "云服务",
-  vps: "VPS/主机",
-  domain: "域名/建站",
-  opensource: "开源软件",
-  software: "软件授权",
-  dev: "开发/工程",
-  design: "设计/素材",
-  security: "安全/网络",
-  hardware: "硬件/数码",
-  media: "影音会员",
-  game: "游戏",
-  carpool: "拼车/合租",
-  trade: "二手/交易",
-  headline: "时政要闻",
-  world: "国际要闻",
-  finance: "经济/商业",
-  stock: "股票/市场",
-  tech: "科技动态",
-  news: "综合资讯",
-  goods: "实物/优惠",
-  offline: "实地福利",
-  invite: "邀请码",
-  edu: "教育/考试",
-  pan: "网盘资源",
-  course: "网课/教程",
-  other: "其它",
+  ai: "AI Credits",
+  cloud: "Cloud Services",
+  vps: "VPS / Servers",
+  domain: "Domains / Web Hosting",
+  opensource: "Open Source",
+  software: "Software Licenses",
+  dev: "Dev / Engineering",
+  design: "Design / Assets",
+  security: "Security / Network",
+  hardware: "Hardware / Gadgets",
+  media: "Media / Streaming",
+  game: "Games",
+  carpool: "Carpool / Sharing",
+  trade: "Secondhand / Trade",
+  headline: "Top News",
+  world: "World News",
+  finance: "Economy / Business",
+  stock: "Stocks / Markets",
+  tech: "Tech News",
+  news: "General News",
+  goods: "Goods / Deals",
+  offline: "In-person Freebies",
+  invite: "Invite Codes",
+  edu: "Education / Exams",
+  pan: "Cloud Drive Files",
+  course: "Courses / Tutorials",
+  other: "Other",
 } satisfies Record<Category, string>;
 
-/** 对外用宽松索引类型，调用方拿到的可能是任意 string（来自数据库/AI）。 */
+/** Loose index type for external callers: the value may be any string (from DB / AI). */
 export const CATEGORY_LABEL: Record<string, string> = CATEGORY_LABEL_BY_KEY;
 
-/** 一句话说清这个分类收什么，供下拉/悬浮说明使用。 */
+/** One-line explanation of what each category collects, for dropdowns / tooltips. */
 export const CATEGORY_DESC: Record<Category, string> = {
-  ai: "大模型额度 / Token / 算力 / API 试用",
-  cloud: "云主机外的云服务：对象存储 / CDN / 数据库 / 代理流量",
-  vps: "独立服务器 / VPS 小鸡 / 现车 / 家宽",
-  domain: "域名 / SSL / DNS / 虚拟主机 / 建站",
-  opensource: "GitHub、GitLab 仓库与可自托管项目",
-  software: "正版授权 / 激活码 / 限免与买断软件",
-  dev: "开发框架 / CLI / SDK / 插件 / 部署教程",
-  design: "字体 / 图标 / UI 模板 / 素材 / 预设",
-  security: "漏洞 / VPN / 隐私与安全工具",
-  hardware: "硬件 / 路由器 / NAS / 数码外设",
-  media: "影音会员 / 剧集 / 音乐 / 动漫",
-  game: "喜加一 / 史低 / 游戏本体与礼包",
-  carpool: "合规拼车 / 合租 / 家庭组车位",
-  trade: "明盘出鸡 / 账号与设备转让",
-  headline: "国内时政 / 政策法规 / 民生要闻",
-  world: "国际局势 / 外交 / 海外要闻",
-  finance: "宏观经济 / 财报 / 融资并购 / 货币",
-  stock: "A股 / 港股 / 美股 / ETF / IPO",
-  tech: "科技前沿 / 芯片 / 互联网 / 航天新能源",
-  news: "综合快讯与其它资讯",
-  goods: "生活羊毛 / 优惠券 / 话费红包 / 实物",
-  offline: "线下活动 / 门店 / 快闪 / 现场领取的实物福利（必须能到店领到实物；纯资讯、抽检通报、租房组队不算）",
-  invite: "邀请码 / 开放注册 / 内测资格",
-  edu: "题库 / 真题 / 教材 / 电子书 / 备考",
-  pan: "夸克 / 阿里云盘 / 百度网盘等分享与转存",
-  course: "公开课 / 训练营 / 视频课程 / 课件讲义",
-  other: "兜底分类",
+  ai: "LLM credits / tokens / compute / API trials",
+  cloud: "Cloud services beyond VMs: object storage / CDN / DB / proxy traffic",
+  vps: "Dedicated servers / VPS / bare metal / home broadband",
+  domain: "Domains / SSL / DNS / web hosting / site building",
+  opensource: "GitHub & GitLab repos and self-hostable projects",
+  software: "Licensed software / activation keys / free & buy-once apps",
+  dev: "Frameworks / CLI / SDK / plugins / deployment guides",
+  design: "Fonts / icons / UI templates / assets / presets",
+  security: "Vulnerabilities / VPN / privacy & security tools",
+  hardware: "Hardware / routers / NAS / gadgets",
+  media: "Streaming memberships / shows / music / anime",
+  game: "Free game keys / historical lows / game bundles",
+  carpool: "Legit carpooling / shared plans / family slots",
+  trade: "Secondhand servers / account & device transfers",
+  headline: "Domestic politics / policy / livelihood news",
+  world: "International affairs / diplomacy / overseas news",
+  finance: "Macro economy / earnings / funding & M&A / currency",
+  stock: "A-shares / HK / US stocks / ETF / IPO",
+  tech: "Tech frontier / chips / internet / space & energy",
+  news: "General news and other updates",
+  goods: "Everyday freebies / coupons / phone credit / physical goods",
+  offline: "In-person events / stores / pop-ups / physical giveaways (must be claimable on site; pure news, spot checks, or roommate hunting do not count)",
+  invite: "Invite codes / open registration / beta access",
+  edu: "Question banks / past papers / textbooks / ebooks / exam prep",
+  pan: "Quark / Aliyun / Baidu netdisk shares and reposts",
+  course: "Open courses / bootcamps / video courses / lecture notes",
+  other: "Fallback category",
 };
 
-/** 大类分组：前端下拉与推送白名单用同一套分组，和主页频道口径一致。 */
+/** Top-level groups: the frontend dropdowns and the push whitelist use the same grouping. */
 export type CategoryGroupKey = "freebie" | "tech" | "content" | "news" | "other";
 
 export const CATEGORY_GROUPS: { key: CategoryGroupKey; label: string; categories: Category[] }[] = [
   {
     key: "freebie",
-    label: "福利与交易",
+    label: "Freebies & Deals",
     categories: ["ai", "cloud", "vps", "domain", "software", "media", "game", "carpool", "trade", "goods", "offline", "invite"],
   },
   {
     key: "tech",
-    label: "技术与工具",
+    label: "Tech & Tools",
     categories: ["opensource", "dev", "design", "security", "hardware"],
   },
   {
     key: "content",
-    label: "内容与学习",
+    label: "Content & Learning",
     categories: ["pan", "course", "edu"],
   },
   {
     key: "news",
-    label: "新闻与资讯",
+    label: "News & Information",
     categories: ["headline", "world", "finance", "stock", "tech", "news"],
   },
   {
     key: "other",
-    label: "其它",
+    label: "Other",
     categories: ["other"],
   },
 ];
@@ -146,63 +145,64 @@ export function isCategory(value: unknown): value is Category {
 
 export function categoryLabel(category: string | null | undefined): string {
   const key = (category ?? "other") as Category;
-  return CATEGORY_LABEL[key] ?? category ?? "其它";
+  return CATEGORY_LABEL[key] ?? category ?? "Other";
 }
 
-/** 新闻/资讯场景下的栏目名（避免科技新闻显示成「AI 额度」）。 */
+/** Column names in news/info contexts (so tech news does not show as "AI Credits"). */
 export const NEWS_CATEGORY_LABEL: Record<string, string> = {
-  headline: "时政要闻",
-  world: "国际要闻",
-  finance: "经济/商业",
-  stock: "股票/市场",
-  tech: "科技前沿",
-  ai: "AI 前沿",
-  dev: "开发工程",
-  opensource: "开源生态",
-  security: "安全/漏洞",
-  cloud: "云与架构",
-  vps: "主机/网络",
-  hardware: "硬件数码",
-  software: "软件/应用",
-  game: "游戏动态",
-  design: "设计体验",
-  edu: "教育/考试",
-  pan: "网盘资源",
-  course: "网课/教程",
-  news: "综合资讯",
-  other: "其它资讯",
+  headline: "Top News",
+  world: "World News",
+  finance: "Economy / Business",
+  stock: "Stocks / Markets",
+  tech: "Tech Frontier",
+  ai: "AI Frontier",
+  dev: "Development",
+  opensource: "Open Source",
+  security: "Security",
+  cloud: "Cloud / Architecture",
+  vps: "Hosting / Network",
+  hardware: "Hardware",
+  software: "Software / Apps",
+  game: "Gaming",
+  design: "Design / UX",
+  edu: "Education",
+  pan: "Cloud Drives",
+  course: "Courses",
+  news: "General News",
+  other: "Other News",
 };
 
 /* ------------------------------------------------------------------ *
- * 频道（主页大类 preset）
+ * Channels (homepage presets)
  * ------------------------------------------------------------------ */
 
-/** 真福利/白嫖频道的分类集合：网盘、网课、实地福利各有独立频道，不混进来 */
+/** Categories in the verified/all-freebies channels: cloud drives, courses, and in-person have their own channels */
 export const FREEBIE_CATEGORY_KEYS: Category[] = [
   "ai", "software", "game", "cloud", "vps", "domain", "media", "design", "dev", "edu", "goods", "invite", "opensource", "security", "hardware", "other",
 ];
 
 /**
- * 频道 = 主页顶部的大类；分类白名单以它为默认集合，推送规则也支持一键套用。
- * exclude 里的分类即使出现在 categories 里也会被该频道排除（主页查询与分类胶囊都按它算）。
+ * A channel = one of the big homepage tabs; its category whitelist doubles as the default set,
+ * and push rules can apply it in one click. Categories in `exclude` are removed from the channel
+ * even if listed in `categories` (homepage query and category pills both honor it).
  */
 export const CHANNELS: { key: string; label: string; categories: Category[]; exclude?: Category[] }[] = [
-  { key: "verified", label: "真福利", categories: FREEBIE_CATEGORY_KEYS, exclude: ["pan", "course", "offline"] },
-  { key: "free", label: "全部白嫖", categories: FREEBIE_CATEGORY_KEYS },
-  { key: "offline", label: "实地福利", categories: ["offline"] },
-  { key: "pan", label: "网盘/网课", categories: ["pan", "course"] },
-  { key: "deal", label: "好价", categories: ["vps", "carpool", "trade", "game", "software", "cloud", "domain", "ai", "media", "pan", "course", "hardware", "goods", "design", "dev", "security", "edu", "other"] },
-  { key: "opensource", label: "开源", categories: ["ai", "dev", "opensource", "security", "cloud", "vps", "software", "tech", "design", "hardware", "course", "edu", "other"] },
-  { key: "news", label: "重要新闻", categories: ["headline", "world", "finance", "tech", "stock", "news", "security", "other"] },
-  { key: "info", label: "行业资讯", categories: ["finance", "stock", "tech", "ai", "dev", "hardware", "security", "cloud", "software", "game", "opensource", "design", "course", "edu", "news", "other"] },
+  { key: "verified", label: "Verified Freebies", categories: FREEBIE_CATEGORY_KEYS, exclude: ["pan", "course", "offline"] },
+  { key: "free", label: "All Freebies", categories: FREEBIE_CATEGORY_KEYS },
+  { key: "offline", label: "In-person Freebies", categories: ["offline"] },
+  { key: "pan", label: "Cloud Drives / Courses", categories: ["pan", "course"] },
+  { key: "deal", label: "Deals", categories: ["vps", "carpool", "trade", "game", "software", "cloud", "domain", "ai", "media", "pan", "course", "hardware", "goods", "design", "dev", "security", "edu", "other"] },
+  { key: "opensource", label: "Open Source", categories: ["ai", "dev", "opensource", "security", "cloud", "vps", "software", "tech", "design", "hardware", "course", "edu", "other"] },
+  { key: "news", label: "Top News", categories: ["headline", "world", "finance", "tech", "stock", "news", "security", "other"] },
+  { key: "info", label: "Industry News", categories: ["finance", "stock", "tech", "ai", "dev", "hardware", "security", "cloud", "software", "game", "opensource", "design", "course", "edu", "news", "other"] },
 ];
 
-/** 该频道要排除的分类（主页查询用它拼 excludeCategory，避免分类胶囊里出现点了没结果的项）。 */
+/** Categories a channel excludes (the homepage query uses it to build excludeCategory). */
 export function channelExcluded(preset: string): Category[] {
   return CHANNELS.find((c) => c.key === preset)?.exclude ?? [];
 }
 
-/** preset 未知（如 codes / urgent / starred）时返回全部分类。 */
+/** Unknown preset (codes / urgent / starred) returns all categories. */
 export function categoriesForPreset(preset: string): string[] {
   const channel = CHANNELS.find((c) => c.key === preset);
   if (!channel) return [...CATEGORY_KEYS];
@@ -228,7 +228,7 @@ export function categoryLabelForKind(
 }
 
 /* ------------------------------------------------------------------ *
- * 内容形态（kind）
+ * Content kinds
  * ------------------------------------------------------------------ */
 
 export const CONTENT_KIND_KEYS = ["freebie", "deal", "opensource", "news", "info", "noise"] as const;
@@ -236,17 +236,17 @@ export const CONTENT_KIND_KEYS = ["freebie", "deal", "opensource", "news", "info
 export type ContentKind = (typeof CONTENT_KIND_KEYS)[number];
 
 const KIND_LABEL_BY_KEY = {
-  freebie: "白嫖福利",
-  deal: "特价好价",
-  opensource: "开源项目",
-  news: "重要新闻",
-  info: "行业资讯",
-  noise: "噪音水帖",
+  freebie: "Freebie",
+  deal: "Deal",
+  opensource: "Open Source",
+  news: "Top News",
+  info: "Industry News",
+  noise: "Noise",
 } satisfies Record<ContentKind, string>;
 
 export const KIND_LABEL: Record<string, string> = KIND_LABEL_BY_KEY;
 
-/** 可被分配/筛选的形态（noise 是拦截结果，不作为筛选项）。 */
+/** Kinds that can be assigned / filtered (noise is a rejection result, not a filter option). */
 export const KIND_ORDER = ["freebie", "deal", "opensource", "news", "info"] as const;
 
 export const KIND_SET: ReadonlySet<string> = new Set<string>(CONTENT_KIND_KEYS);
@@ -256,7 +256,7 @@ export function isContentKind(v: unknown): v is ContentKind {
 }
 
 /* ------------------------------------------------------------------ *
- * 获取方式（obtain）
+ * Obtain modes
  * ------------------------------------------------------------------ */
 
 export const OBTAIN_KEYS = ["free", "conditional", "lottery", "trial", "promo", "paid"] as const;
@@ -264,23 +264,23 @@ export const OBTAIN_KEYS = ["free", "conditional", "lottery", "trial", "promo", 
 export type ObtainMode = (typeof OBTAIN_KEYS)[number];
 
 const OBTAIN_LABEL_BY_KEY = {
-  free: "直接白嫖",
-  conditional: "有条件",
-  lottery: "抽奖",
-  trial: "试用/限时",
-  promo: "推广/广告",
-  paid: "需付费",
+  free: "Free",
+  conditional: "Conditional",
+  lottery: "Giveaway",
+  trial: "Trial",
+  promo: "Promo",
+  paid: "Paid",
 } satisfies Record<ObtainMode, string>;
 
 export const OBTAIN_LABEL: Record<string, string> = OBTAIN_LABEL_BY_KEY;
 
 const OBTAIN_HINT_BY_KEY = {
-  free: "点开就能领，不需要发帖、邀请、抽签",
-  conditional: "要回帖、盖楼、转发、关注、邀请或实名绑卡才能拿",
-  lottery: "抽名额/开奖，不一定轮到你",
-  trial: "免费试用 N 天或首月免费，到期要付费",
-  promo: "本质是商家推广自家付费服务，福利是引流钩子",
-  paid: "要实付钱才拿得到",
+  free: "Claim instantly — no posts, invites, or draws needed",
+  conditional: "Requires posting, following, inviting, or verifying",
+  lottery: "Random draw — not guaranteed",
+  trial: "Free for N days or the first month, then paid",
+  promo: "Marketing hook for a paid service",
+  paid: "Requires payment",
 } satisfies Record<ObtainMode, string>;
 
 export const OBTAIN_HINT: Record<string, string> = OBTAIN_HINT_BY_KEY;
@@ -294,10 +294,10 @@ export function isObtainMode(v: unknown): v is ObtainMode {
 }
 
 /* ------------------------------------------------------------------ *
- * 下拉选项（数据源运维 / 推送规则共用）
+ * Dropdown options (shared by source ops / push rules)
  * ------------------------------------------------------------------ */
 
-/** 按大类分组的分类选项，供 <optgroup> 或多列面板渲染。 */
+/** Category options grouped by top-level group, for <optgroup> or multi-column panels. */
 export function categoryOptionGroups(): { label: string; options: { value: Category; label: string; desc: string }[] }[] {
   return CATEGORY_GROUPS.map((g) => ({
     label: g.label,

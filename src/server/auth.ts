@@ -505,14 +505,14 @@ function finishLogin(c: Context, profile: LinuxdoProfile, invite: string): Respo
   app.post("/api/auth/redeem-invite", async (c) => {
     const raw = getCookie(c, PENDING_COOKIE) ?? "";
     const pending = raw ? verifySignedToken<{ profile: LinuxdoProfile }>(raw) : null;
-    if (!pending?.profile) return c.json({ error: "注册凭证已过期，请重新登录 LINUX DO", expired: true }, 400);
+    if (!pending?.profile) return c.json({ error: "Registration credential expired — log in with LINUX DO again", expired: true }, 400);
     const body = (await c.req.json().catch(() => null)) as { code?: string } | null;
     const code = (body?.code ?? "").trim();
-    if (!code) return c.json({ error: "请输入邀请码" }, 400);
+    if (!code) return c.json({ error: "Please enter an invite code" }, 400);
 
     const access = getAccessControl();
-    if (!access.loginEnabled) return c.json({ error: "站点当前已关闭登录" }, 403);
-    if (access.registrationMode === "closed") return c.json({ error: "站点当前已停止新用户注册" }, 403);
+    if (!access.loginEnabled) return c.json({ error: "Login is currently disabled on this site" }, 403);
+    if (access.registrationMode === "closed") return c.json({ error: "New signups are currently closed on this site" }, 403);
     const blocked = admissionBlocked();
     if (blocked) return c.json({ error: blocked }, 403);
 
@@ -542,9 +542,9 @@ function finishLogin(c: Context, profile: LinuxdoProfile, invite: string): Respo
 
   /** 本地模拟登录：只在非生产 + 显式开启时可用，用来验证多账号隔离与双 Bot 推送 */
   app.post("/api/auth/dev-login", async (c) => {
-    if (!devMockEnabled) return c.json({ error: "本地模拟登录未开启" }, 403);
+    if (!devMockEnabled) return c.json({ error: "Local mock login is not enabled" }, 403);
     const access = getAccessControl();
-    if (!access.loginEnabled) return c.json({ error: "站点当前已关闭登录" }, 403);
+    if (!access.loginEnabled) return c.json({ error: "Login is currently disabled on this site" }, 403);
     const body = (await c.req.json().catch(() => ({}))) as { preset?: string; trustLevel?: number; invite?: string };
     const preset = body.preset === "bob" ? "bob" : "alice";
     const linuxdoId = preset === "bob" ? 900002 : 900001;
@@ -560,12 +560,12 @@ function finishLogin(c: Context, profile: LinuxdoProfile, invite: string): Respo
     };
     const existing = findUserByLinuxdoId(linuxdoId);
     if (existing) {
-      if (existing.disabled === 1) return c.json({ error: "该测试账号已被停用" }, 403);
+      if (existing.disabled === 1) return c.json({ error: "This test account has been disabled" }, 403);
       upsertUser(profile, existing.invited_by_id ?? null);
       createSession(c, existing.id);
       return c.json({ ok: true, user: toAuthUser(existing) });
     }
-    if (access.registrationMode === "closed") return c.json({ error: "站点当前已停止新用户注册" }, 403);
+    if (access.registrationMode === "closed") return c.json({ error: "New signups are currently closed on this site" }, 403);
     const blocked = admissionBlocked();
     if (blocked) return c.json({ error: blocked }, 403);
     // 邀请码模式下，本地模拟登录也走真实准入：带码直接核销，没带码就发「待补码」凭证
@@ -579,7 +579,7 @@ function finishLogin(c: Context, profile: LinuxdoProfile, invite: string): Respo
           secure: isSecureRequest(c),
           maxAge: 600,
         });
-        return c.json({ ok: false, needInvite: true, message: "站点开启了邀请码注册，请填写邀请码完成注册" });
+        return c.json({ ok: false, needInvite: true, message: "This site uses invite-code signup — enter an invite code to finish registering" });
       }
       const row = upsertUser(profile, null);
       const redeemed = redeemInviteCode(invite, row.id);
@@ -598,8 +598,8 @@ function finishLogin(c: Context, profile: LinuxdoProfile, invite: string): Respo
   /** 个人 RSS Token 重置 */
   app.post("/api/me/rss-token/reset", (c) => {
     const id = identityOf(c);
-    if (!id.user) return c.json({ error: "需要登录" }, 401);
-    if (id.personalSuspended) return c.json({ error: "站点已暂停个人功能" }, 403);
+    if (!id.user) return c.json({ error: "Login required" }, 401);
+    if (id.personalSuspended) return c.json({ error: "Personal features are suspended on this site" }, 403);
     const token = randomToken(24);
     run("UPDATE users SET rss_token = ? WHERE id = ?", token, id.user.id);
     return c.json({ ok: true, rssToken: token });

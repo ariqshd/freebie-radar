@@ -1,6 +1,6 @@
 /**
- * 管理端凭据：只存在 sessionStorage，关掉标签页就没了。
- * 用全局 fetch 包装统一带上 Authorization，避免每个调用点都要改。
+ * Admin端credentials: 只存在 sessionStorage, 关掉标签页就没了. 
+ * 用Global fetch 包装统一带上 Authorization, 避免每个调用点都要改. 
  */
 const KEY = "radar-admin-token";
 
@@ -16,7 +16,7 @@ export function setToken(token: string): void {
   try {
     sessionStorage.setItem(KEY, token);
   } catch {
-    /* 隐私模式下不可用，退化为不保存 */
+    /* 隐私模式下不可用, 退化为不Save */
   }
 }
 
@@ -30,7 +30,7 @@ export function clearToken(): void {
 
 let installed = false;
 
-/** 在 main.tsx 里调用一次：所有 fetch 自动附带管理密码。 */
+/** 在 main.tsx 里调用一次: 所有 fetch 自动附带Admin password.  */
 export function installAuthFetch(): void {
   if (installed || typeof window === "undefined") return;
   installed = true;
@@ -44,11 +44,11 @@ export function installAuthFetch(): void {
   }) as typeof fetch;
 }
 
-/** 验证密码：命中返回 true。 */
+/** 验证密码: match返回 true.  */
 export async function verifyToken(token: string): Promise<boolean> {
   const r = await fetch("/api/auth/check", { headers: { authorization: `Bearer ${token}` } });
   if (!r.ok) return false;
-  // 真正需要密码的接口再探一次，确认有权限
+  // 真正需要密码的接口再探一次, 确认有权限
   const probe = await fetch("/api/push", { headers: { authorization: `Bearer ${token}` } });
   if (probe.status === 401) return false;
   return true;

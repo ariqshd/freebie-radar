@@ -55,8 +55,8 @@ export function useBootstrap(): { data: Bootstrap | null; loading: boolean; relo
 }
 
 /* ------------------------------------------------------------------ *
- * 访客本地状态：公开站未登录时，「不想看 / 收藏 / 已读 / 快屏蔽」
- * 只存在这台浏览器里，绝不发请求，所以谁也不会影响别人。
+ * 访客本地Status: 公开站未Log in时, "hide / star / read / quick-block"
+ * 只存在这台浏览器里, 绝不发请求, 所以谁也不会影响别人. 
  * ------------------------------------------------------------------ */
 
 const GUEST_KEY = "radar_guest_state_v1";
@@ -91,7 +91,7 @@ export function writeGuest(state: GuestState): void {
   try {
     localStorage.setItem(GUEST_KEY, JSON.stringify(state));
   } catch {
-    /* 隐私模式 / 配额满：静默降级，本轮仍可用内存状态 */
+    /* 隐私模式 / 配额满: 静默降级, 本轮仍可用内存Status */
   }
 }
 
@@ -110,7 +110,7 @@ function toggle(list: number[], id: number, on: boolean): number[] {
   return [...set];
 }
 
-/** 访客版 PATCH：与 /api/me/items/:id 同语义，只是落到 localStorage */
+/** 访客版 PATCH: and /api/me/items/:id 同语义, 只是落到 localStorage */
 export function guestPatch(id: number, body: { starred?: boolean; read?: boolean; status?: string }): GuestState {
   const s = readGuest();
   if (typeof body.starred === "boolean") s.starred = toggle(s.starred, id, body.starred);
@@ -148,7 +148,7 @@ export function guestRemoveBlock(pattern: string): GuestState {
   return s;
 }
 
-/** 访客本地屏蔽词是否命中（关键词，大小写不敏感） */
+/** 访客本地Blocklist是否match (Keyword, 大小写不敏感) */
 export function guestBlocks(title: string, summary: string | null, patterns: string[]): boolean {
   if (!patterns.length) return false;
   const hay = (title + " " + (summary ?? "")).toLowerCase();
@@ -159,7 +159,7 @@ export function guestCounts(s: GuestState): { hidden: number; starred: number; r
   return { hidden: s.hidden.length, starred: s.starred.length, read: s.read.length, blocked: s.blocked.length };
 }
 
-/** 登录成功后把本地偏好合并进账号（用户手动点「合并」才调用） */
+/** Log in成功后把本地偏好Merge进account (用户手动点"Merge"才调用) */
 export async function importGuestToAccount(s: GuestState): Promise<{ ok: boolean; imported: number; error?: string }> {
   const res = await fetch("/api/me/items/import-guest", {
     method: "POST",
@@ -168,7 +168,7 @@ export async function importGuestToAccount(s: GuestState): Promise<{ ok: boolean
   });
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
-    return { ok: false, imported: 0, error: err.error ?? "合并失败" };
+    return { ok: false, imported: 0, error: err.error ?? "Merge failed" };
   }
   const data = (await res.json()) as { imported: number };
   clearGuest();

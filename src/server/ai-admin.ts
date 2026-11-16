@@ -134,7 +134,7 @@ export async function backfillAi(
   mode: BackfillMode = "pending",
 ): Promise<{ reviewed: number; rejected: number; skippedBlocked: number; scanned: number; mode: BackfillMode; error?: string }> {
   const s = getAiSettings();
-  if (!aiReady(s)) return { reviewed: 0, rejected: 0, skippedBlocked: 0, scanned: 0, mode, error: "AI 未启用或未配置" };
+  if (!aiReady(s)) return { reviewed: 0, rejected: 0, skippedBlocked: 0, scanned: 0, mode, error: "AI is disabled or not configured" };
 
   const safeLimit = Math.min(Math.max(Math.round(limit), 1), 2000);
   const scanLimit = Math.min(safeLimit * 4, 4000);
@@ -176,7 +176,7 @@ export async function backfillAi(
   const modeLabel = mode === "rejected" ? "复核已拦截" : mode === "recent" ? "重审近期" : "未审补审";
   const jobId = startAiJob({
     stage: "backfill",
-    label: `历史库补审（${modeLabel}）`,
+    label: `DB backfill review (${modeLabel})`,
     model: s.model,
     total: activeRows.length,
     totalBatches: Math.ceil(activeRows.length / s.batchSize),

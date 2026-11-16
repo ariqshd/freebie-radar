@@ -36,12 +36,12 @@ export type Onboarding = {
 };
 
 const DEFAULT_ONBOARDING_CONTENT = [
-  "资源雷达把社区、游戏平台、软件限免站、GitHub、Reddit、Bluesky、Telegram 与自定义 RSS 的信息聚合到一起，",
-  "先过规则初筛与统一屏蔽词，再由 AI 语义定级分流，最后按你的规则推送到 Telegram。",
+  "Resource Radar aggregates feeds from communities, game platforms, software giveaway sites, GitHub, Reddit, Bluesky, Telegram, and custom RSS.",
+  "Items first pass rule pre-filtering and a unified blocklist, then get AI semantic grading and triage, and finally are pushed to Telegram by your rules.",
   "",
-  "· 不登录也能浏览全部公开内容，「不想看 / 收藏 / 已读」只存在你自己的浏览器里，不会影响别人。",
-  "· 用 LINUX DO 登录后可跨设备同步个人偏好，还能绑定自己的 Telegram Bot，按个人规则收推送。",
-  "· 每条资源都带原始链接，兑换码与截止时间请自行核对，本站只做聚合与筛选，不对第三方活动的有效性负责。",
+  "· You can browse all public content without logging in — hide / star / read stays in your own browser and never affects others.",
+  "· Log in with LINUX DO to sync preferences across devices and bind your own Telegram Bot for personal pushes.",
+  "· Every item links to the original post. Verify codes and deadlines yourself; this site only aggregates and filters, and is not responsible for third-party offers.",
 ].join("\n");
 
 function numOr(v: unknown, fallback: number, min: number, max: number): number {
@@ -116,14 +116,14 @@ export function userQuota(): { used: number; max: number; full: boolean } {
 /** 新用户准入前的统一闸门；返回 null 表示可以放行 */
 export function admissionBlocked(): string | null {
   const q = userQuota();
-  if (q.full) return `站点名额已满（${q.used}/${q.max}），暂时停止新用户注册`;
+  if (q.full) return `Site quota is full (${q.used}/${q.max}) — new signups are paused for now`;
   return null;
 }
 export function getOnboarding(): Onboarding {
   const row = get<{ value: string }>("SELECT value FROM settings WHERE key = ?", ONBOARDING_KEY);
   const base: Onboarding = {
     enabled: true,
-    title: "欢迎来到资源雷达",
+    title: "Welcome to Resource Radar",
     content: DEFAULT_ONBOARDING_CONTENT,
     showGuideCards: true,
     version: 1,
@@ -249,16 +249,16 @@ export type RedeemResult =
  */
 export function redeemInviteCode(code: string, userId: number): RedeemResult {
   const normalized = code.trim().toUpperCase();
-  if (!normalized) return { ok: false, error: "请输入邀请码" };
+  if (!normalized) return { ok: false, error: "Please enter an invite code" };
   return txImmediate<RedeemResult>(() => {
     const row = get<InviteCode>(
       "SELECT id, code, max_uses, used_count, disabled, note, expires_at, created_at FROM invite_codes WHERE code = ?",
       normalized,
     );
-    if (!row) return { ok: false, error: "邀请码不存在" };
-    if (row.disabled === 1) return { ok: false, error: "该邀请码已被停用" };
-    if (row.expires_at && row.expires_at <= new Date().toISOString()) return { ok: false, error: "该邀请码已过期" };
-    if (row.used_count >= row.max_uses) return { ok: false, error: "该邀请码已用完" };
+    if (!row) return { ok: false, error: "Invite code not found" };
+    if (row.disabled === 1) return { ok: false, error: "This invite code has been disabled" };
+    if (row.expires_at && row.expires_at <= new Date().toISOString()) return { ok: false, error: "This invite code has expired" };
+    if (row.used_count >= row.max_uses) return { ok: false, error: "This invite code has been used up" };
     const res = run(
       `UPDATE invite_codes SET used_count = used_count + 1
         WHERE id = ? AND disabled = 0 AND used_count < max_uses
@@ -266,7 +266,7 @@ export function redeemInviteCode(code: string, userId: number): RedeemResult {
       row.id,
       new Date().toISOString(),
     );
-    if (Number(res.changes) !== 1) return { ok: false, error: "该邀请码刚刚被用完，请换一个" };
+    if (Number(res.changes) !== 1) return { ok: false, error: "This invite code was just used up — try another one" };
     run(
       "INSERT INTO invite_redemptions (invite_id, user_id, redeemed_at) VALUES (?, ?, ?) ON CONFLICT(invite_id, user_id) DO NOTHING",
       row.id,

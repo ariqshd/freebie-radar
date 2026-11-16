@@ -108,7 +108,7 @@ import {
 function checkSourceHints(kindHint: unknown, categoryHint: unknown): string | null {
   if (typeof kindHint === "string" && kindHint.trim()) {
     const v = kindHint.trim();
-    if (!isContentKind(v) || v === "noise") return `kindHint 只能是 ${KIND_ORDER.join("/")}`;
+    if (!isContentKind(v) || v === "noise") return `kindHint must be one of ${KIND_ORDER.join("/")}`;
   }
   if (typeof categoryHint === "string" && categoryHint.trim()) {
     const v = categoryHint.trim();
@@ -614,8 +614,8 @@ export function registerApi(app: Hono) {
     if (path.startsWith("/api/auth/") || path === "/api/site/bootstrap") return next();
 
     if (path.startsWith("/api/me/")) {
-      if (!identity.user) return c.json({ error: "需要登录", needLogin: true }, 401);
-      if (identity.personalSuspended) return c.json({ error: "站点已暂停个人功能" }, 403);
+      if (!identity.user) return c.json({ error: "Login required", needLogin: true }, 401);
+      if (identity.personalSuspended) return c.json({ error: "Personal features are suspended on this site" }, 403);
       return next();
     }
 
@@ -630,7 +630,7 @@ export function registerApi(app: Hono) {
         console.warn("[auth] 公开站未设置 ADMIN_TOKEN，管理接口已锁定");
         warnedAdminLocked = true;
       }
-      return c.json({ error: "站点未配置 ADMIN_TOKEN，管理区已锁定", needAuth: true, adminLocked: true }, 403);
+      return c.json({ error: "ADMIN_TOKEN is not configured on this site; admin is locked", needAuth: true, adminLocked: true }, 403);
     }
     if (!config.adminToken) {
       if (!warnedNoAdminToken) {
@@ -639,7 +639,7 @@ export function registerApi(app: Hono) {
       }
       return next();
     }
-    return c.json({ error: "需要管理密码", needAuth: true }, 401);
+    return c.json({ error: "Admin password required", needAuth: true }, 401);
   });
 
   // 前端用它验证密码是否正确
@@ -805,7 +805,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     const lines = [`# 资源雷达导出 (${new Date().toISOString().slice(0, 10)}) · ${rows.length} 条`, ""];
     for (const r of rows) {
       const s = shape(r, subKeywords);
-      const tags = [s.source_id, s.category, s.is_free === 1 ? "白嫖" : s.price ? `≤${Math.round(s.price)}元` : null]
+      const tags = [s.source_id, s.category, s.is_free === 1 ? "free" : s.price ? `≤$${Math.round(s.price)}` : null]
         .filter(Boolean)
         .join(" · ");
       lines.push(`- [${r.title}](${r.url}) — *${tags}*` + (s.codes.length ? ` \`${s.codes.join(" / ")}\`` : ""));
@@ -853,7 +853,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.post("/api/items/batch", async (c) => {
     const body = (await c.req.json().catch(() => null)) as { ids?: number[]; action?: string } | null;
-    if (!body?.ids?.length || !body.action) return c.json({ error: "ids 与 action 必填" }, 400);
+    if (!body?.ids?.length || !body.action) return c.json({ error: "ids and action are required" }, 400);
     const ids = body.ids.filter((n) => Number.isInteger(n)).slice(0, 200);
     if (!ids.length) return c.json({ updated: 0 });
     const ph = ids.map(() => "?").join(",");
@@ -939,13 +939,13 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     }
 
     const pattern = (body?.pattern ?? "").trim();
-    if (!pattern || pattern.length > 80) return c.json({ error: "pattern 必填且不超过 80 字" }, 400);
+    if (!pattern || pattern.length > 80) return c.json({ error: "pattern is required and must be at most 80 characters" }, 400);
     const mode = body?.mode === "regex" ? "regex" : "keyword";
     if (mode === "regex") {
       try {
         new RegExp(pattern, "i");
       } catch {
-        return c.json({ error: "正则表达式语法无效" }, 400);
+        return c.json({ error: "Invalid regular expression" }, 400);
       }
     }
     const scope = (body?.scope ?? "all").trim() || "all";
@@ -1001,7 +1001,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     } | null;
     const name = (body?.name ?? "").trim();
     const url = (body?.url ?? "").trim();
-    if (!name || !/^https?:\/\//i.test(url)) return c.json({ error: "名称与合法的 http(s) RSS 地址必填" }, 400);
+    if (!name || !/^https?:\/\//i.test(url)) return c.json({ error: "A name and a valid http(s) RSS URL are required" }, 400);
     const hintErr = checkSourceHints(body?.kindHint, body?.categoryHint);
     if (hintErr) return c.json({ error: hintErr }, 400);
     const id = addCustomRssSource({
@@ -1046,13 +1046,13 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     }
     if (typeof body.name === "string") {
       const nextName = body.name.trim();
-      if (!nextName || nextName.length > 80) return c.json({ error: "名称长度需在 1-80 字之间" }, 400);
+      if (!nextName || nextName.length > 80) return c.json({ error: "Name must be 1-80 characters" }, 400);
       sets.push("name = ?");
       params.push(nextName);
     }
     if (body.config !== undefined) {
       if (!body.config || typeof body.config !== "object" || Array.isArray(body.config)) {
-        return c.json({ error: "config 必须为 JSON 对象" }, 400);
+        return c.json({ error: "config must be a JSON object" }, 400);
       }
       const cfg = body.config as Record<string, unknown>;
       const hintErr = checkSourceHints(cfg.kindHint, cfg.categoryHint);
@@ -1060,12 +1060,12 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
       if (existing.kind === "rss") {
         const feeds = (body.config as { feeds?: unknown }).feeds;
         if (!Array.isArray(feeds) || feeds.length === 0) {
-          return c.json({ error: "RSS 源 config.feeds 必须至少包含一条订阅地址" }, 400);
+          return c.json({ error: "RSS source config.feeds must contain at least one feed URL" }, 400);
         }
         for (const f of feeds) {
           const url = typeof (f as { url?: unknown })?.url === "string" ? (f as { url: string }).url.trim() : "";
           if (!/^https?:\/\//i.test(url)) {
-            return c.json({ error: "RSS 订阅地址必须是合法的 http(s):// URL" }, 400);
+            return c.json({ error: "RSS feed URLs must be valid http(s):// URLs" }, 400);
           }
           const feedHintErr = checkSourceHints(
             (f as { kindHint?: unknown })?.kindHint,
@@ -1124,7 +1124,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   app.post("/api/cookies/test-runner", async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as { runnerUrl?: string };
     const url = (body.runnerUrl ?? getCookieSettings().runnerUrl).replace(/\/+$/, "");
-    if (!url) return c.json({ ok: false, error: "未配置执行器地址" }, 400);
+    if (!url) return c.json({ ok: false, error: "Runner address not configured" }, 400);
     try {
       const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(4000) });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; busy?: boolean; chrome?: boolean };
@@ -1151,7 +1151,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   app.post("/api/subscriptions", async (c) => {
     const body = (await c.req.json().catch(() => null)) as { keyword?: string } | null;
     const keyword = (body?.keyword ?? "").trim();
-    if (!keyword || keyword.length > 40) return c.json({ error: "keyword 必填且不超过 40 字" }, 400);
+    if (!keyword || keyword.length > 40) return c.json({ error: "keyword is required and must be at most 40 characters" }, 400);
     run(
       "INSERT INTO subscriptions (keyword, created_at) VALUES (?, ?) ON CONFLICT(keyword) DO NOTHING",
       keyword,
@@ -1285,7 +1285,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.patch("/api/push", async (c) => {
     const body = (await c.req.json().catch(() => null)) as Partial<PushSettings> | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     const settings = savePushSettings(body);
     return c.json({ settings, stats: pushStats(), quiet: isQuietNow(settings) });
   });
@@ -1313,7 +1313,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   });
   app.patch("/api/ai", async (c) => {
     const body = (await c.req.json().catch(() => null)) as (Partial<AiSettings> & { reviewBeforePush?: boolean }) | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     if (typeof body.reviewBeforePush === "boolean") {
       savePushSettings({ pushTiming: body.reviewBeforePush ? "wait_ai" : "instant_first" });
     }
@@ -1360,7 +1360,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.patch("/api/retention", async (c) => {
     const body = (await c.req.json().catch(() => null)) as Partial<RetentionSettings> | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     return c.json({ settings: saveRetention(body), counts: itemCounts() });
   });
 
@@ -1390,18 +1390,18 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.post("/api/push/test", async (c) => {
     if (!pushEnabled || config.pushChannel !== "telegram" || !config.telegramBotToken || !config.telegramChatId) {
-      return c.json({ error: "Telegram 推送未启用或缺少凭据" }, 400);
+      return c.json({ error: "Telegram push is disabled or credentials are missing" }, 400);
     }
-    await sendTelegram("🛰 资源雷达测试消息 · " + new Date().toLocaleString("zh-CN"));
+    await sendTelegram("🛰 Resource Radar test message · " + new Date().toLocaleString("en-US"));
     return c.json({ ok: true });
   });
 
   app.post("/api/ingest", async (c) => {
-    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN 未配置，拒绝写入" }, 403);
+    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN is not configured; writes are rejected" }, 403);
     const auth = c.req.header("authorization") ?? "";
     if (auth !== "Bearer " + config.ingestToken) return c.json({ error: "unauthorized" }, 401);
     const body = (await c.req.json().catch(() => null)) as { sourceId?: string; items?: unknown[] } | null;
-    if (!body?.sourceId || !Array.isArray(body.items)) return c.json({ error: "sourceId 与 items 必填" }, 400);
+    if (!body?.sourceId || !Array.isArray(body.items)) return c.json({ error: "sourceId and items are required" }, 400);
     const items = body.items
       .filter((i): i is RawItem => {
         const r = i as RawItem | null;
@@ -1415,18 +1415,18 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   });
 
   app.post("/api/ingest/failed", async (c) => {
-    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN 未配置" }, 403);
+    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN is not configured" }, 403);
     const auth = c.req.header("authorization") ?? "";
     if (auth !== "Bearer " + config.ingestToken) return c.json({ error: "unauthorized" }, 401);
     const body = (await c.req.json().catch(() => null)) as { sourceId?: string; reason?: string; status?: string } | null;
-    if (!body?.sourceId || !body.reason) return c.json({ error: "sourceId 与 reason 必填" }, 400);
+    if (!body?.sourceId || !body.reason) return c.json({ error: "sourceId and reason are required" }, 400);
     const status = body.status === "failed" ? "failed" : "degraded";
     return c.json(markSourceFailure(body.sourceId, body.reason, status));
   });
 
   /** 供本地/远端 Playwright 采集器同步「我的订阅」关键词，主动去知乎/小红书/小黑盒定向搜索 */
   app.get("/api/ingest/keywords", (c) => {
-    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN 未配置" }, 403);
+    if (!config.ingestToken) return c.json({ error: "INGEST_TOKEN is not configured" }, 403);
     const auth = c.req.header("authorization") ?? "";
     if (auth !== "Bearer " + config.ingestToken) return c.json({ error: "unauthorized" }, 401);
     const rows = all<{ keyword: string }>("SELECT keyword FROM subscriptions ORDER BY id DESC LIMIT 20");
@@ -1516,7 +1516,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   const currentUserId = (c: any): number => {
     const id = identityOf(c);
-    if (!id.user) throw new Error("需要登录");
+    if (!id.user) throw new Error("Login required");
     return id.user.id;
   };
 
@@ -1567,7 +1567,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   app.post("/api/me/items/batch", async (c) => {
     const userId = currentUserId(c);
     const body = (await c.req.json().catch(() => null)) as { ids?: number[]; action?: string } | null;
-    if (!body?.ids?.length || !body.action) return c.json({ error: "ids 与 action 必填" }, 400);
+    if (!body?.ids?.length || !body.action) return c.json({ error: "ids and action are required" }, 400);
     const ids = body.ids.filter((n) => Number.isInteger(n)).slice(0, 200);
     if (!ids.length) return c.json({ updated: 0 });
     for (const itemId of ids) {
@@ -1668,10 +1668,10 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
       return c.json({ ok: true, added: PRESET_NOISE_PATTERNS.length });
     }
     const pattern = (body?.pattern ?? "").trim();
-    if (!pattern || pattern.length > 80) return c.json({ error: "pattern 必填且不超过 80 字" }, 400);
+    if (!pattern || pattern.length > 80) return c.json({ error: "pattern is required and must be at most 80 characters" }, 400);
     const mode = body?.mode === "regex" ? "regex" : "keyword";
     if (mode === "regex") {
-      try { new RegExp(pattern, "i"); } catch { return c.json({ error: "正则表达式语法无效" }, 400); }
+      try { new RegExp(pattern, "i"); } catch { return c.json({ error: "Invalid regular expression" }, 400); }
     }
     const scope = (body?.scope ?? "all").trim() || "all";
     run(
@@ -1710,7 +1710,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     const userId = currentUserId(c);
     const body = (await c.req.json().catch(() => null)) as { keyword?: string } | null;
     const keyword = (body?.keyword ?? "").trim();
-    if (!keyword || keyword.length > 40) return c.json({ error: "keyword 必填且不超过 40 字" }, 400);
+    if (!keyword || keyword.length > 40) return c.json({ error: "keyword is required and must be at most 40 characters" }, 400);
     run(
       "INSERT INTO user_subscriptions (user_id, keyword, created_at) VALUES (?, ?, ?) ON CONFLICT(user_id, keyword) DO NOTHING",
       userId, keyword, new Date().toISOString(),
@@ -1751,7 +1751,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
   app.patch("/api/me/push", async (c) => {
     const userId = currentUserId(c);
     const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     try {
       const cfg = saveUserPushConfig(userId, body as never);
       return c.json({ config: cfg, settings: cfg.settings, stats: userPushStats(userId), quiet: isQuietNow(cfg.settings) });
@@ -1766,7 +1766,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     let token = (body.botToken ?? "").trim();
     if (!token) {
       token = resolveUserBotToken(userId) ?? "";
-      if (!token) return c.json({ error: "请先填写 Bot Token" }, 400);
+      if (!token) return c.json({ error: "Enter a Bot Token first" }, 400);
     }
     try {
       const chats = await detectTelegramChatIds(token);
@@ -1781,9 +1781,9 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     const cfg = getUserPushConfig(userId);
     const viaWebhook = cfg.settings.deliverVia === "webhook";
     if (viaWebhook ? !cfg.settings.webhookUrl : !cfg.hasToken || !cfg.chatId)
-      return c.json({ error: viaWebhook ? "请先保存 webhook 地址" : "请先保存 Bot Token 与 Chat ID" }, 400);
+      return c.json({ error: viaWebhook ? "Save the webhook URL first" : "Save the Bot Token and Chat ID first" }, 400);
     try {
-      await sendTelegramToUser(userId, "🛰 资源雷达 · 个人推送测试消息\n" + new Date().toLocaleString("zh-CN"));
+      await sendTelegramToUser(userId, "🛰 Resource Radar · personal push test message\n" + new Date().toLocaleString("en-US"));
       return c.json({ ok: true });
     } catch (err) {
       return c.json({ error: err instanceof Error ? err.message : String(err) }, 400);
@@ -1829,7 +1829,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.patch("/api/admin/access", async (c) => {
     const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     return c.json({ access: saveAccessControl(body as never) });
   });
 
@@ -1878,7 +1878,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
 
   app.patch("/api/admin/onboarding", async (c) => {
     const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
-    if (!body) return c.json({ error: "无效的请求体" }, 400);
+    if (!body) return c.json({ error: "Invalid request body" }, 400);
     return c.json({ onboarding: saveOnboarding(body as never) });
   });
 
@@ -1978,8 +1978,8 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     return sendFeed(
       c,
       items,
-      "资源雷达 · 福利订阅",
-      "全网福利、黑五好价、拼车交易、开源项目与新闻资讯的聚合订阅",
+      "Resource Radar · Freebie Feed",
+      "Aggregated feed of freebies, Black Friday deals, carpools, open source, and tech news",
       "/rss.xml" + (qs ? "?" + qs : ""),
       "public",
     );
@@ -1991,7 +1991,7 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     const file = c.req.param("file");
     const token = file.replace(/\.xml$/i, "");
     const user = userByRssToken(token);
-    if (!user) return c.text("RSS 链接无效或已被重置", 404);
+    if (!user) return c.text("RSS link is invalid or has been reset", 404);
     const q = c.req.query();
     const mode = q.mode === "push" || q.mode === "subs" ? q.mode : "feed";
     const limit = Math.min(Math.max(Number(q.limit ?? 50), 1), 100);
@@ -2030,8 +2030,8 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     return sendFeed(
       c,
       items.slice(0, limit),
-      "资源雷达 · " + (user.name ?? user.username) + " 的订阅",
-      mode === "push" ? "按我的推送规则输出" : mode === "subs" ? "只包含我关注的关键词" : "我的个人订阅（已排除我关掉的条目）",
+      "Resource Radar · feed for " + (user.name ?? user.username),
+      mode === "push" ? "Filtered by my push rules" : mode === "subs" ? "Only my watched keywords" : "My personal feed (hides items I closed)",
       "/rss/u/" + token + ".xml" + (mode !== "feed" ? "?mode=" + mode : ""),
       "user-" + user.id + "-" + mode,
     );

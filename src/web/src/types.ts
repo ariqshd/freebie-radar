@@ -15,7 +15,7 @@ export type Item = {
   content: string | null;
   price: number | null;
   is_free: number;
-  /** 获取方式：free 直接白嫖 / conditional 有条件 / lottery 抽奖 / trial 试用 / promo 推广 / paid 需付费 */
+  /** Obtain mode: free 直接白嫖 / conditional 有items件 / lottery 抽奖 / trial 试用 / promo 推广 / paid 需付费 */
   obtain: string | null;
   matched: string[];
   blockedBy?: string | null;
@@ -30,7 +30,7 @@ export type Item = {
   ai: { keep?: boolean; reason?: string; category?: string; obtain?: string; quality?: number } | null;
   first_seen_at: string;
   last_seen_at: string;
-  /** 同一福利被多少个源报道（1 = 只有这一条） */
+  /** 同一福利被多少个源报道 (1 = 只有这一items) */
   dupCount?: number;
 };
 
@@ -172,13 +172,13 @@ export type PushPreview = {
   scanned: number;
   matched: number;
   rejectedBy?: Record<string, number>;
-  /** 够格「即时」的总条数（不受展示条数限制） */
+  /** 够格"Instant"的总items数 (不受展示items数限制) */
   instantTotal: number;
-  /** 按每轮即时上限与小时额度，这一批实际能即时发出的条数 */
+  /** 按Per round Instantcapand小时额度, 这一批实际能Instant发出的items数 */
   sendableInstant: number;
-  /** 够格「攒批」的总条数（已含被即时上限挤过来的部分） */
+  /** 够格"Batch"的总items数 (已含被Instantcap挤过来的部分) */
   batchTotal: number;
-  /** 被即时上限挤进攒批队列的条数 */
+  /** 被Instantcap挤进Batch queue的items数 */
   deferred: number;
   usedThisHour: number;
   caps: { maxPerInstant: number; maxPerHour: number; maxPerBatch: number; batchIntervalMin: number; budget: number };
@@ -200,14 +200,14 @@ export type PushPayload = {
   quiet: boolean;
 };
 
-/* --- AI 语义审核配置 --- */
+/* --- AI semantic review配置 --- */
 
 export type AiSourceMode = "all" | "exclude" | "only";
 
 export type AiSettings = {
   enabled: boolean;
   baseUrl: string;
-  /** 只在本地表单里用；服务端返回的是打码值 */
+  /** 只在本地表单里用; 服务端返回的是打码值 */
   apiKey: string;
   model: string;
   maxItems: number;
@@ -226,7 +226,7 @@ learnFromFeedback: boolean;
   feedbackLimit: number;
   /** AI 语义去重总开关 */
   aiDedupEnabled: boolean;
-  /** 语义去重对比窗口（小时） */
+  /** 语义去重Compare window (小时) */
   aiDedupWindowHours: number;
   hasKey: boolean;
   keyHint: string;
@@ -349,11 +349,11 @@ export type PushLogItem = {
   ok: number;
   error: string | null;
   created_at: string;
-  /** 为什么推它：命中哪条规则、分数多少 */
+  /** 为什么推它: match哪items规则, pts数多少 */
   reason: string | null;
 };
 
-/* --- 今日热点 --- */
+/* --- Today's Hot --- */
 
 export type HotScope = "all" | "deals" | "news" | "info";
 export type HotWord = { w: string; n: number; prev: number; delta: number };
@@ -387,7 +387,7 @@ export type HotReport = {
   topNews?: HotTopItem[];
 };
 
-/* --- 来源质量榜 --- */
+/* --- Source quality --- */
 
 export type SourceQuality = {
   id: string;

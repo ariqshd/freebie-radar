@@ -2,8 +2,8 @@ import { BookOpen, Globe2, Send, ShieldCheck, X } from "lucide-react";
 import type { Bootstrap } from "../lib/session.ts";
 
 /**
- * 入站提示：首次访问（或站长把版本号 +1 后）弹一次。
- * 内容由后台可编辑，这里的引导卡片按站点形态动态决定显示哪几条。
+ * 入站提示: 首次访问 (or站长把版本号 +1 后)弹一次. 
+ * 内容由后台可Edit, 这里的引导卡片按站点Kind动态决定显示哪几items. 
  */
 export function WelcomeModal({
   boot,
@@ -19,18 +19,18 @@ export function WelcomeModal({
   const cards = [
     isPublic && {
       icon: ShieldCheck,
-      title: "不登录也不会互相影响",
-      body: "不想看、收藏、已读、快捷屏蔽都只存在你自己的浏览器里；登录后才跨设备同步。",
+      title: "No login needed — users never affect each other",
+      body: "Hidden, starred, read, and quick-block stay in your own browser; they sync across devices only after you log in.",
     },
     boot.loginEnabled && {
       icon: Send,
-      title: "绑定自己的 Telegram Bot",
-      body: "登录后可填自己的 Bot Token 与 Chat ID，按个人规则收推送，不会打扰别人。",
+      title: "Bind your own Telegram Bot",
+      body: "After logging in you can set your own Bot Token and Chat ID to get personal pushes without bothering anyone else.",
     },
     {
       icon: Globe2,
-      title: "支持 RSS 订阅",
-      body: "顶栏「RSS」按钮能生成公开订阅链接；登录后还有带个人屏蔽规则的专属链接。",
+      title: "RSS feeds supported",
+      body: "The \u201cRSS\u201d button in the top bar creates a public feed link; logged-in users also get a personal link that respects their blocklist.",
     },
   ].filter(Boolean) as { icon: typeof ShieldCheck; title: string; body: string }[];
 
@@ -46,7 +46,7 @@ export function WelcomeModal({
             type="button"
             onClick={onClose}
             className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-900"
-            title="关闭"
+            title="Close"
           >
             <X size={14} />
           </button>
@@ -77,7 +77,7 @@ export function WelcomeModal({
               onClick={onLogin}
               className="rounded-lg border border-ink-200 bg-surface px-3 py-1.5 text-[12.5px] font-medium text-ink-700 hover:bg-ink-100"
             >
-              先登录
+              Log in first
             </button>
           )}
           <button
@@ -85,7 +85,7 @@ export function WelcomeModal({
             onClick={onClose}
             className="rounded-lg bg-ink-950 px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:bg-brand-hover"
           >
-            开始使用
+            Get started
           </button>
         </div>
       </div>
