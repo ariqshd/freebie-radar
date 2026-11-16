@@ -8,7 +8,11 @@ import { aiReady, fallbackTarget, getAiSettings, postChat, type AiSettings, type
  * - 结果写入 title_en / summary_en，前端展示时优先用英文，原始中文保留（搜索/屏蔽/去重仍按原文）
  */
 
-const BATCH_SIZE = 6;
+const BATCH_SIZE = 3;
+/** 失败批次的重试前等待（Groq 免费档按分钟限额，稍等就能恢复） */
+const RETRY_DELAY_MS = 3500;
+/** 批次之间的间距：压低每分钟 token 速率，避免 429 */
+const BATCH_GAP_MS = 4000;
 const SUMMARY_MAX = 420;
 const TITLE_MAX_OUT = 300;
 const SUMMARY_MAX_OUT = 700;
@@ -101,7 +105,17 @@ export async function translatePendingItems(limit?: number): Promise<TranslateSt
     const batch = targets.slice(i, i + BATCH_SIZE);
     const payload = batch.map((r, idx) => ({ index: idx, title: r.title.slice(0, 160), summary: excerpt(r.summary) }));
     try {
-      const map = await callTranslate(payload, s);
+      let map;
+      try {
+        map = await callTranslate(payload, s);
+      } catch (err) {
+        // 备用供应商（Groq 免费档）按分钟限额：等一会再试一次
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!/HTTP 429|rate limit/i.test(msg)) throw err;
+        console.log(`[translate] 429，等 ${RETRY_DELAY_MS}ms 重试 1 次`);
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+        map = await callTranslate(payload, s);
+      }
       let ok = 0;
       for (const [idx, t] of map) {
         const row = batch[idx];
@@ -117,6 +131,9 @@ export async function translatePendingItems(limit?: number): Promise<TranslateSt
     } catch (err) {
       failed += batch.length;
       console.log("[translate] batch failed:", err instanceof Error ? err.message : String(err));
+    }
+    if (i + BATCH_SIZE < targets.length) {
+      await new Promise((r) => setTimeout(r, BATCH_GAP_MS));
     }
   }
   if (translated) console.log(`[translate] ${translated} items translated to English (${failed} failed)`);
