@@ -5,7 +5,8 @@ services:
     restart: unless-stopped
     mem_limit: 256m
     ports:
-      - "${PORT:-8788}:8788"
+      # loopback only: reachable via Caddy (Tailscale-only) at https://freebies.004141.xyz
+      - "127.0.0.1:8788:8788"
     environment:
       PORT: "8788"
       HOST: "0.0.0.0"

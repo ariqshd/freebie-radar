@@ -158,7 +158,7 @@ export function HotPanel({
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <span className="text-[13.5px] font-semibold text-ink-950">Hot words</span>
               <span className="text-[11.5px] text-ink-500">
-                字号 = 独立事件提及次数 · <Delta delta={totalDelta} /> 为andlast window相比的事件增减
+                Font size = distinct-event mentions · <Delta delta={totalDelta} /> = change vs the last window
               </span>
             </div>
             {words.length === 0 ? (
@@ -237,7 +237,7 @@ export function HotPanel({
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-ink-950">
                   <Sparkles size={13} className="text-deal" />
-                  这个窗口Top picks
+                  This window\u2019s Top picks
                 </span>
                 <span className="text-[11px] text-ink-500">Freebies & deals only · deduped</span>
               </div>
@@ -261,7 +261,7 @@ export function HotPanel({
                         {it.quality ? <span className="text-deal">· quality {it.quality}</span> : null}
                         {(it.dupCount ?? 1) > 1 ? (
                           <span className="rounded bg-brand-subtle px-1 py-0.2 text-[10.5px] text-accent">
-                            {it.dupCount} 源同步
+                            {it.dupCount} sources
                           </span>
                         ) : null}
                       </span>
@@ -286,7 +286,7 @@ export function HotPanel({
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-ink-950">
                   <Newspaper size={14} className="text-accent" />
-                  Top News & Industry精选
+                  Top News & Industry picks
                 </span>
                 <span className="text-[11px] text-ink-500">Folded as the same event; not mixed into "Top picks"</span>
               </div>
@@ -308,7 +308,7 @@ export function HotPanel({
                         {it.quality ? <span className="text-accent">· quality {it.quality}</span> : null}
                         {(it.dupCount ?? 1) > 1 ? (
                           <span className="rounded bg-brand-subtle px-1 py-0.2 text-[10.5px] text-accent">
-                            {it.dupCount} 篇同事件
+                            {it.dupCount} same-event posts
                           </span>
                         ) : null}
                       </span>
@@ -321,7 +321,7 @@ export function HotPanel({
           )}
 
           <div className="px-1 text-[11px] text-ink-400">
-            统计范围: {windowLabel}内 status=active 且未被 AI 判为噪音的items目 · 更新于 {timeAgo(report.to)}
+            Scope: status=active items from {windowLabel} not judged noise by AI · updated {timeAgo(report.to)}
           </div>
         </div>
       )}

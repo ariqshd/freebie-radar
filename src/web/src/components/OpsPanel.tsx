@@ -600,10 +600,10 @@ export function OpsPanel({
     const origin = typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8788";
     const tok = ingestTokenInput.trim() || "Replace with your INGEST_TOKEN";
     return `// ==UserScript==
-// @name         Freebie Radar 零 Cookie 上传采集助手
+// @name         Freebie Radar zero-cookie-upload collector helper
 // @namespace    https://github.com/ZiChuanLan/freebie-radar
 // @version      0.1.0
-// @description  仅读取当前搜索页公开帖子Titleand链接发送到你自己的 Freebie Radar, Cookie 绝不离开浏览器
+// @description  Reads only public posts on the current search page and sends the titles and links to your own Freebie Radar; cookies never leave the browser
 // @match        https://www.xiaohongshu.com/search_result*
 // @match        https://www.zhihu.com/search*
 // @match        https://www.xiaoheihe.cn/app/bbs/*
@@ -1002,7 +1002,7 @@ export function OpsPanel({
                     }}
                     className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-surface px-2 py-1 text-[11.5px] hover:border-brand-border hover:text-brand"
                   >
-                    <Copy size={11} /> Copy命令
+                    <Copy size={11} /> Copy command
                   </button>
                   <button
                     type="button"
@@ -1012,7 +1012,7 @@ export function OpsPanel({
                     }}
                     className="inline-flex items-center gap-1 rounded-lg border border-brand-border bg-surface px-2 py-1 text-[11.5px] text-brand hover:bg-brand-subtle"
                   >
-                    <Copy size={11} /> Copy油猴脚本 (方式 B · 免装 Node)
+                    <Copy size={11} /> Copy userscript (Option B · no Node needed)
                   </button>
                 </div>
                   </div>
@@ -1093,7 +1093,7 @@ export function OpsPanel({
                     className="inline-flex items-center justify-center gap-1 rounded-lg bg-brand px-3.5 py-1.5 text-[12.5px] font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
                   >
                     {addingRss ? <Loader2 size={13} className="animate-spin" /> : <Plus size={14} />}
-                    加入并采集
+                    Add & collect
                   </button>
                 </div>
               </div>
@@ -1138,7 +1138,7 @@ export function OpsPanel({
                           return `${cat} · ${kind}`;
                         })()}
                       </span>
-                      <span>{timeAgo(s.last_run_at)}采集</span>
+                      <span>{timeAgo(s.last_run_at)} · last run</span>
                       <button
                         type="button"
                         onClick={() => onToggleSource(s.id, !s.enabled)}
@@ -1192,7 +1192,7 @@ export function OpsPanel({
                           title="Paste cookies first or enable local loopback collection"
                         >
                           <KeyRound size={11} />
-                          配置 Cookie
+                          Configure cookies
                         </button>
                       ) : (
                         <button
@@ -1225,7 +1225,7 @@ export function OpsPanel({
               <table className="w-full text-left text-[13px]">
                 <thead className="bg-surface-hover text-[11px] tracking-wide text-ink-500 uppercase">
                   <tr className="border-b border-ink-200">
-                    <th className="px-4 py-2.5 font-medium">源</th>
+                    <th className="px-4 py-2.5 font-medium">Source</th>
                     <th className="px-2 py-2.5 font-medium">Enable</th>
                     <th className="px-2 py-2.5 font-medium">Interval</th>
                     <th className="px-2 py-2.5 font-medium">Category policy</th>
@@ -1343,7 +1343,7 @@ export function OpsPanel({
                                   title="Paste cookies to enable full VPS collection"
                                 >
                                   <KeyRound size={11} />
-                                  配 Cookie
+                                  Cookies needed
                                 </button>
                                 <button
                                   type="button"
@@ -1399,7 +1399,7 @@ export function OpsPanel({
                 <Gauge size={15} className="text-brand" /> Source quality
               </div>
               <p className="mt-0.5 text-[12px] text-ink-500">
-                Keep rate = AI 判为有效 ÷ Revieweditems数. Keep rate低, items数又多的源, 基本是在白烧采集and AI 额度. 
+                Keep rate = AI-kept ÷ reviewed items. A low keep rate with lots of items means the source is burning collection and AI quota. 
               </p>
             </div>
             <div className="flex items-center gap-0.5 rounded-md border border-ink-200 bg-surface p-0.5">
@@ -1426,14 +1426,14 @@ export function OpsPanel({
           <div className="panel overflow-hidden">
             {qualityLoading && !quality && (
               <div className="flex items-center gap-2 px-4 py-8 text-[13px] text-ink-500">
-                <Loader2 size={13} className="animate-spin" /> 统计中…
+                <Loader2 size={13} className="animate-spin" /> computing…
               </div>
             )}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-[13px]">
                 <thead className="bg-surface-hover text-[11px] tracking-wide text-ink-500 uppercase">
                   <tr className="border-b border-ink-200">
-                    <th className="px-4 py-2 font-medium">源</th>
+                    <th className="px-4 py-2 font-medium">Source</th>
                     <th className="px-2 py-2 text-right font-medium">Added</th>
                     <th className="px-2 py-2 text-right font-medium">Reviewed</th>
                     <th className="px-2 py-2 text-right font-medium">Kept</th>
@@ -1491,14 +1491,14 @@ export function OpsPanel({
       {subTab === "runs" && (
         <div className="panel overflow-hidden">
           <div className="border-b border-ink-100 px-4 py-3 text-[13.5px] font-semibold text-ink-950">
-            Last run记录 ({runs.length})
+            Run history ({runs.length})
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-[13px]">
               <thead className="bg-surface-hover text-[11px] tracking-wide text-ink-500 uppercase">
                 <tr className="border-b border-ink-200">
                   <th className="px-4 py-2 font-medium">Time</th>
-                  <th className="px-2 py-2 font-medium">源</th>
+                  <th className="px-2 py-2 font-medium">Source</th>
                   <th className="px-2 py-2 font-medium">Fetched</th>
                   <th className="px-2 py-2 font-medium">Inserted</th>
                   <th className="px-2 py-2 font-medium">Duration</th>
@@ -1533,10 +1533,10 @@ export function OpsPanel({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2 text-[14.5px] font-semibold text-ink-950">
-                <Trash2 size={15} className="text-brand" /> 数据保留and自动清理
+                <Trash2 size={15} className="text-brand" /> Data retention & auto-cleanup
               </div>
               <p className="mt-0.5 text-[12px] text-ink-500">
-                修改天数后失焦即Save; Staritems目永久保留不Delete. 
+                Changes save on blur; starred items are kept forever and never deleted. 
               </p>
             </div>
             {retCounts && (
@@ -1591,7 +1591,7 @@ export function OpsPanel({
                 onChange={(e) => void saveRetentionField({ auto: e.target.checked })}
                 className="h-4 w-4 accent-brand"
               />
-              每天自动清理过期数据
+              Auto-clean expired data daily
             </label>
             <div className="ml-auto flex items-center gap-2">
               <button
@@ -1599,7 +1599,7 @@ export function OpsPanel({
                 onClick={previewCleanup}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-surface px-3.5 py-1.5 text-[12.5px] font-medium text-ink-700 hover:bg-ink-100"
               >
-                <Search size={13} /> 预演清理量
+                <Search size={13} /> Preview cleanup
               </button>
               <button
                 type="button"
@@ -1607,14 +1607,14 @@ export function OpsPanel({
                 onClick={doCleanup}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-alert-border bg-alert-subtle px-3.5 py-1.5 text-[12.5px] font-medium text-alert hover:bg-red-100/80 disabled:opacity-60"
               >
-                {cleaning ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} 立即清理
+                {cleaning ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} clean up now
               </button>
             </div>
           </div>
 
           {cleanPreview && (
             <div className="rounded-lg border border-ink-200 bg-surface-hover p-3 text-[12.5px] text-ink-700">
-              将清理: 
+              Will delete: 
               {Object.entries(cleanPreview)
                 .filter(([, n]) => n > 0)
                 .map(([k, n]) => `${k}: ${n}`)
