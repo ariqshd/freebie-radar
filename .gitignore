@@ -19,3 +19,6 @@ docs/fs-test.json
 shots/
 scripts/__pycache__/
 __pycache__/
+
+# OpenBao 下发的管理员令牌（deploy.sh 生成，600）
+.secrets/

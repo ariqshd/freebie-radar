@@ -27,6 +27,9 @@ COPY src/server ./src/server
 COPY src/shared ./src/shared
 COPY tsconfig.json ./
 RUN mkdir -p /data
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 EXPOSE 8788
 VOLUME ["/data"]
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
