@@ -237,6 +237,13 @@ learnFromFeedback: boolean;
   translatePerRun: number;
   /** Dedicated (cheaper) model for translation; empty = main model */
   translateModel: string;
+  /** Fallback provider (auto-failover when the primary fails) */
+  fallbackEnabled: boolean;
+  fallbackBaseUrl: string;
+  fallbackApiKey: string;
+  fallbackModel: string;
+  hasFallbackKey: boolean;
+  fallbackKeyHint: string;
   hasKey: boolean;
   keyHint: string;
   ready: boolean;

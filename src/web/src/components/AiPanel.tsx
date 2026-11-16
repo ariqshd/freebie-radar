@@ -886,6 +886,74 @@ When on it runs fully automatically: once when an item passes review, and again 
           )}
         </div>
 
+        <div className="rounded-lg border border-ink-200 bg-surface-hover p-3.5">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-[12.5px] font-medium text-ink-900">Fallback provider (auto-failover)</div>
+              <div className="mt-0.5 text-[11px] leading-snug text-ink-500">
+                When the primary endpoint fails (429 quota exhausted / 5xx / timeout), review, translation, and dedupe
+                automatically retry against this provider. Cloudflare stays primary — this only kicks in on failure.
+                Needs base URL, model, and key all set; the key is stored server-side and never echoed back.
+                {s.hasFallbackKey ? ` Key saved (${s.fallbackKeyHint}).` : " No key set yet."}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const next = !form.fallbackEnabled;
+                setForm({ ...form, fallbackEnabled: next });
+                void save({ fallbackEnabled: next }, next ? "Fallback on" : "Fallback off");
+              }}
+              className={
+                "rounded-lg border px-3 py-1 text-[12px] font-medium transition-colors " +
+                (form.fallbackEnabled
+                  ? "border-deal-border bg-deal-subtle text-deal"
+                  : "border-ink-200 bg-ink-100 text-ink-600")
+              }
+            >
+              {form.fallbackEnabled ? "On" : "Off"}
+            </button>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-[11.5px] font-medium text-ink-600">Fallback base URL</span>
+              <input
+                value={form.fallbackBaseUrl}
+                onChange={(e) => setForm({ ...form, fallbackBaseUrl: e.target.value })}
+                onBlur={() => void save({ fallbackBaseUrl: form.fallbackBaseUrl })}
+                placeholder="https://api.groq.com/openai/v1"
+                className="w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-900 outline-none focus:border-brand"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[11.5px] font-medium text-ink-600">Fallback model</span>
+              <input
+                value={form.fallbackModel}
+                onChange={(e) => setForm({ ...form, fallbackModel: e.target.value })}
+                onBlur={() => void save({ fallbackModel: form.fallbackModel })}
+                placeholder="qwen/qwen3-32b"
+                className="w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-900 outline-none focus:border-brand"
+              />
+            </label>
+            <label className="block sm:col-span-2">
+              <span className="mb-1 block text-[11.5px] font-medium text-ink-600">
+                Fallback API key {s.hasFallbackKey && <span className="text-ink-400">(saved {s.fallbackKeyHint} — leave empty to keep)</span>}
+              </span>
+              <input
+                type="password"
+                value={form.fallbackApiKey ?? ""}
+                onChange={(e) => setForm({ ...form, fallbackApiKey: e.target.value })}
+                onBlur={() => {
+                  const v = (form.fallbackApiKey ?? "").trim();
+                  if (v && !v.startsWith("••••")) void save({ fallbackApiKey: v }, "Fallback key saved");
+                }}
+                placeholder={s.hasFallbackKey ? "••••" + s.fallbackKeyHint : "gsk_..."}
+                className="w-full rounded-lg border border-ink-200 bg-surface px-2.5 py-1.5 font-mono text-[12px] text-ink-900 outline-none focus:border-brand"
+              />
+            </label>
+          </div>
+        </div>
+
 <div className="rounded-lg border border-ink-200 bg-surface-hover px-3.5 py-2.5 text-[12px] leading-relaxed text-ink-600">
           Custom block words are merged with "<span className="font-medium text-ink-900">Subscriptions & Blocklist</span>" into one rule: items hitting the global blocklist or a regex are also skipped before AI review, saving review tokens. 
         </div>

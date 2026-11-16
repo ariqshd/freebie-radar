@@ -1,5 +1,5 @@
 import { all, get, run, tx } from "../db.ts";
-import { aiReady, getAiSettings, type AiSettings } from "./ai-settings.ts";
+import { aiReady, fallbackTarget, getAiSettings, type AiSettings } from "./ai-settings.ts";
 
 export type DedupCandidate = {
   id: number;
@@ -105,7 +105,6 @@ export async function findSemanticDuplicatesWithAi(
 
   const validAnchorIds = new Set(anchors.map((a) => a.id));
   const candidateIds = new Set(candidates.map((c) => c.id));
-  const endpoint = s.baseUrl.replace(/\/+$/, "") + "/chat/completions";
   const ac = new AbortController();
   const timeoutMs = Math.max(s.timeoutSec * 1000, 12_000);
   const timer = setTimeout(() => ac.abort(), timeoutMs);
@@ -128,28 +127,39 @@ export async function findSemanticDuplicatesWithAi(
     })),
   };
 
+  const dedupTargets: { label: string; target: { baseUrl: string; model: string; apiKey: string } }[] = [
+    { label: "primary", target: { baseUrl: s.baseUrl, model: s.model, apiKey: s.apiKey } },
+  ];
+  const fb = fallbackTarget(s);
+  if (fb) dedupTargets.push({ label: "fallback", target: fb });
+
   try {
-    const res = await fetchImpl(endpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(s.apiKey ? { authorization: "Bearer " + s.apiKey } : {}),
-      },
-      body: JSON.stringify({
-        model: s.model,
-        temperature: 0,
-        messages: [
-          { role: "system", content: DEDUP_SYSTEM_PROMPT },
-          { role: "user", content: JSON.stringify(payload) },
-        ],
-      }),
-      signal: ac.signal,
-    });
-    if (!res.ok) {
-      throw new Error(`AI 去重 HTTP ${res.status} ${(await res.text()).slice(0, 100)}`);
+    let content = "";
+    for (const attempt of dedupTargets) {
+      const res = await fetchImpl(attempt.target.baseUrl.replace(/\/+$/, "") + "/chat/completions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(attempt.target.apiKey ? { authorization: "Bearer " + attempt.target.apiKey } : {}),
+        },
+        body: JSON.stringify({
+          model: attempt.target.model,
+          temperature: 0,
+          messages: [
+            { role: "system", content: DEDUP_SYSTEM_PROMPT },
+            { role: "user", content: JSON.stringify(payload) },
+          ],
+        }),
+        signal: ac.signal,
+      });
+      if (!res.ok) {
+        throw new Error(`AI dedup HTTP ${res.status} ${(await res.text()).slice(0, 100)}`);
+      }
+      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      content = data.choices?.[0]?.message?.content ?? "";
+      if (attempt.label === "fallback") console.log("[ai-dedup] served by FALLBACK provider");
+      break;
     }
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const content = data.choices?.[0]?.message?.content ?? "";
     const jsonText = /\[[\s\S]*\]/.exec(content)?.[0];
     if (!jsonText) return out;
     const arr = JSON.parse(jsonText) as Array<{

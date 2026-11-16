@@ -69,6 +69,12 @@ export type AiSettings = {
   translatePerRun: number;
   /** 翻译专用模型（省额度用小模型）；留空 = 复用主模型 */
   translateModel: string;
+  /** 备用供应商自动兜底：主端点失败（429 额度用尽/5xx/超时）时自动改走备用端点 */
+  fallbackEnabled: boolean;
+  fallbackBaseUrl: string;
+  fallbackApiKey: string;
+  /** 备用模型（审核用）；留空则不启用兜底 */
+  fallbackModel: string;
 };
 
 const SETTINGS_KEY = "ai";
@@ -132,6 +138,10 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   translateEnabled: true,
   translatePerRun: 24,
   translateModel: "@cf/meta/llama-3.1-8b-instruct-fp8",
+  fallbackEnabled: true,
+  fallbackBaseUrl: "",
+  fallbackApiKey: "",
+  fallbackModel: "",
 };
 
 function numOr(v: unknown, fallback: number, min: number, max: number): number {
@@ -183,6 +193,13 @@ function normalizeSettings(raw: Partial<AiSettings>, base: AiSettings): AiSettin
     translateEnabled: typeof raw.translateEnabled === "boolean" ? raw.translateEnabled : base.translateEnabled,
     translatePerRun: numOr(raw.translatePerRun, base.translatePerRun, 0, 120),
     translateModel: typeof raw.translateModel === "string" ? raw.translateModel.trim() : base.translateModel,
+    fallbackEnabled: typeof raw.fallbackEnabled === "boolean" ? raw.fallbackEnabled : base.fallbackEnabled,
+    fallbackBaseUrl: typeof raw.fallbackBaseUrl === "string" ? raw.fallbackBaseUrl.trim() : base.fallbackBaseUrl,
+    fallbackApiKey:
+      typeof raw.fallbackApiKey === "string" && raw.fallbackApiKey.trim() && !raw.fallbackApiKey.startsWith("••••")
+        ? raw.fallbackApiKey.trim()
+        : base.fallbackApiKey,
+    fallbackModel: typeof raw.fallbackModel === "string" ? raw.fallbackModel.trim() : base.fallbackModel,
   };
 }
 
@@ -282,12 +299,56 @@ export function publicAiSettings(s = getAiSettings()) {
     translateEnabled: s.translateEnabled,
     translatePerRun: s.translatePerRun,
     translateModel: s.translateModel,
+    fallbackEnabled: s.fallbackEnabled,
+    fallbackBaseUrl: s.fallbackBaseUrl,
+    fallbackApiKey: "",
+    fallbackModel: s.fallbackModel,
+    hasFallbackKey: Boolean(s.fallbackApiKey),
+    fallbackKeyHint: s.fallbackApiKey ? "••••" + s.fallbackApiKey.slice(-4) : "",
     hasKey: Boolean(s.apiKey),
     keyHint: s.apiKey ? "••••" + s.apiKey.slice(-4) : "",
     ready: aiReady(s),
     promptIsDefault: !s.systemPrompt.trim(),
     defaultPrompt: DEFAULT_PROMPT,
   };
+}
+
+/** 备用供应商目标；三要素齐全才启用兜底。 */
+export function fallbackTarget(s: AiSettings): { baseUrl: string; model: string; apiKey: string } | null {
+  if (!s.fallbackEnabled) return null;
+  if (!s.fallbackBaseUrl || !s.fallbackModel || !s.fallbackApiKey) return null;
+  return { baseUrl: s.fallbackBaseUrl, model: s.fallbackModel, apiKey: s.fallbackApiKey };
+}
+
+export type ChatTarget = { baseUrl: string; model: string; apiKey: string };
+
+/** 单次 OpenAI 兼容 chat 请求；返回 content 与首字节耗时。 */
+export async function postChat(
+  body: Record<string, unknown>,
+  target: ChatTarget,
+  timeoutMs: number,
+): Promise<{ content: string; ttfbMs: number }> {
+  const endpoint = target.baseUrl.replace(/\/+$/, "") + "/chat/completions";
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeoutMs);
+  const t0 = Date.now();
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(target.apiKey ? { authorization: "Bearer " + target.apiKey } : {}),
+      },
+      body: JSON.stringify({ ...body, model: target.model }),
+      signal: ac.signal,
+    });
+    const ttfb = Date.now() - t0;
+    if (!res.ok) throw new Error("AI HTTP " + res.status + " " + (await res.text()).slice(0, 120));
+    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    return { content: data.choices?.[0]?.message?.content ?? "", ttfbMs: ttfb };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function buildSystemPrompt(s: AiSettings): string {
@@ -318,45 +379,43 @@ async function callOnce(
   payload: { index: number; title: string; summary: string }[],
   s: AiSettings,
 ): Promise<CallResult> {
-  const endpoint = s.baseUrl.replace(/\/+$/, "") + "/chat/completions";
   const timeoutMs = s.timeoutSec * 1000;
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), timeoutMs);
   const t0 = Date.now();
   const tag = `[ai] batch n=${payload.length} idx=${payload[0]?.index ?? "-"}`;
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(s.apiKey ? { authorization: "Bearer " + s.apiKey } : {}),
-      },
-      body: JSON.stringify({
-        model: s.model,
-        temperature: 0,
-        messages: [
-          { role: "system", content: buildSystemPrompt(s) },
-          { role: "user", content: JSON.stringify(payload) },
-        ],
-      }),
-      signal: ac.signal,
-    });
-    const ttfb = Date.now() - t0;
-    if (!res.ok) throw new Error("AI HTTP " + res.status + " " + (await res.text()).slice(0, 120));
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    console.log(`${tag} 完成 ${Date.now() - t0}ms（响应头 ${ttfb}ms）`);
-    const content = data.choices?.[0]?.message?.content ?? "";
-    const jsonText = /\[[\s\S]*\]/.exec(content)?.[0];
-    if (!jsonText) throw new Error("AI 未返回 JSON 数组");
-    const arr = JSON.parse(jsonText) as AiVerdict[];
-    const map = new Map<number, AiVerdict>();
-    for (const v of arr) {
-      if (typeof v?.index === "number") map.set(v.index, v);
+  const body = {
+    temperature: 0,
+    messages: [
+      { role: "system", content: buildSystemPrompt(s) },
+      { role: "user", content: JSON.stringify(payload) },
+    ],
+  };
+  const primary: ChatTarget = { baseUrl: s.baseUrl, model: s.model, apiKey: s.apiKey };
+  const fb = fallbackTarget(s);
+  const attempts: { label: string; target: ChatTarget }[] = [{ label: "primary", target: primary }];
+  attempts.push(fb ? { label: "fallback", target: fb } : { label: "primary-retry", target: primary });
+
+  let lastErr: Error | undefined;
+  for (const attempt of attempts) {
+    try {
+      const { content, ttfbMs } = await postChat(body, attempt.target, timeoutMs);
+      const jsonText = /\[[\s\S]*\]/.exec(content)?.[0];
+      if (!jsonText) throw new Error("AI 未返回 JSON 数组");
+      const arr = JSON.parse(jsonText) as AiVerdict[];
+      const map = new Map<number, AiVerdict>();
+      for (const v of arr) {
+        if (typeof v?.index === "number") map.set(v.index, v);
+      }
+      if (attempt.label === "fallback") {
+        console.log(`${tag} 主端点失败，备用供应商已接管 (${attempt.target.model})`);
+      }
+      console.log(`${tag} 完成 ${Date.now() - t0}ms（响应头 ${ttfbMs}ms · ${attempt.label}）`);
+      return { map, ttfbMs };
+    } catch (err) {
+      lastErr = err instanceof Error ? err : new Error(String(err));
+      console.log(`${tag} ${attempt.label} 失败: ${lastErr.message.slice(0, 120)}`);
     }
-    return { map, ttfbMs: ttfb };
-  } finally {
-    clearTimeout(timer);
   }
+  throw lastErr ?? new Error("AI call failed");
 }
 
 export type ReviewBatchEvent = {

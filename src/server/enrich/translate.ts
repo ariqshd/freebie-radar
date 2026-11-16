@@ -1,5 +1,5 @@
 import { all, run } from "../db.ts";
-import { aiReady, getAiSettings, type AiSettings } from "./ai-settings.ts";
+import { aiReady, fallbackTarget, getAiSettings, postChat, type AiSettings, type ChatTarget } from "./ai-settings.ts";
 
 /**
  * 中文内容英文翻译：
@@ -44,41 +44,38 @@ async function callTranslate(
   payload: { index: number; title: string; summary: string | null }[],
   s: AiSettings,
 ): Promise<Map<number, Translation>> {
-  const endpoint = s.baseUrl.replace(/\/+$/, "") + "/chat/completions";
-  const model = s.translateModel || s.model;
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), Math.max(s.timeoutSec, 30) * 1000);
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(s.apiKey ? { authorization: "Bearer " + s.apiKey } : {}),
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: JSON.stringify(payload) },
-        ],
-      }),
-      signal: ac.signal,
-    });
-    if (!res.ok) throw new Error("translate HTTP " + res.status + " " + (await res.text()).slice(0, 120));
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const content = data.choices?.[0]?.message?.content ?? "";
-    const jsonText = /\[[\s\S]*\]/.exec(content)?.[0];
-    if (!jsonText) throw new Error("translate: model did not return a JSON array");
-    const arr = JSON.parse(jsonText) as Translation[];
-    const map = new Map<number, Translation>();
-    arr.forEach((t, i) => {
-      if (t && typeof t.title === "string" && t.title.trim()) map.set(typeof t.index === "number" ? t.index : i, t);
-    });
-    return map;
-  } finally {
-    clearTimeout(timer);
+  const body = {
+    temperature: 0,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: JSON.stringify(payload) },
+    ],
+  };
+  const primary: ChatTarget = { baseUrl: s.baseUrl, model: s.translateModel || s.model, apiKey: s.apiKey };
+  const fb = fallbackTarget(s);
+  const attempts: { label: string; target: ChatTarget }[] = [{ label: "primary", target: primary }];
+  if (fb) attempts.push({ label: "fallback", target: fb });
+
+  let lastErr: Error | undefined;
+  for (const attempt of attempts) {
+    try {
+      const { content } = await postChat(body, attempt.target, Math.max(s.timeoutSec, 30) * 1000);
+      const jsonText = /\[[\s\S]*\]/.exec(content)?.[0];
+      if (!jsonText) throw new Error("translate: model did not return a JSON array");
+      const arr = JSON.parse(jsonText) as Translation[];
+      const map = new Map<number, Translation>();
+      arr.forEach((t, i) => {
+        if (t && typeof t.title === "string" && t.title.trim()) map.set(typeof t.index === "number" ? t.index : i, t);
+      });
+      if (!map.size) throw new Error("translate: empty result");
+      if (attempt.label === "fallback") console.log("[translate] served by FALLBACK provider");
+      return map;
+    } catch (err) {
+      lastErr = err instanceof Error ? err : new Error(String(err));
+      console.log(`[translate] ${attempt.label} 失败: ${lastErr.message.slice(0, 120)}`);
+    }
   }
+  throw lastErr ?? new Error("translate failed");
 }
 
 export type TranslateStats = { scanned: number; translated: number; failed: number };
