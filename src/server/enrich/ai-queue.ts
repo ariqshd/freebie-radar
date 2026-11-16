@@ -1,5 +1,7 @@
 import { getAiSettings, reviewItems, type AiVerdict } from "./ai-settings.ts";
+import { aiReady } from "./ai-settings.ts";
 import { dedupeKeptItemsWithAi } from "./ai-dedup.ts";
+import { translatePendingItems } from "./translate.ts";
 import { demoteOfflineCategory, FREEBIE_ONLY_SOURCES, isCategory, resolveKind, type ContentKind } from "./index.ts";
 import { calibrateScoreByObtain } from "./alias.ts";
 import type { RawItem } from "../collectors/types.ts";
@@ -373,6 +375,16 @@ async function drain(): Promise<void> {
             console.error("[ai-queue] 补审补推回调失败:", err instanceof Error ? err.message : String(err));
           }
         }
+      }
+
+      // 审核通过的中文条目翻译成英文（后台异步，不阻塞推送）
+      try {
+        const st = getAiSettings();
+        if (st.translateEnabled && aiReady(st)) {
+          await translatePendingItems(st.translatePerRun);
+        }
+      } catch (err) {
+        console.log("[translate] failed:", err instanceof Error ? err.message : String(err));
       }
     }
   } finally {

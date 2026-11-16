@@ -2,6 +2,7 @@ import { all, get, migrate, run } from "./db.ts";
 import { demoteOfflineCategory, enrichItem, FREEBIE_ONLY_SOURCES, isCategory, resolveKind } from "./enrich/index.ts";
 import { calibrateScoreByObtain, resolveDbMergeKey } from "./enrich/alias.ts";
 import { backfillAi } from "./ai-admin.ts";
+import { translatePendingItems, translatePendingCount } from "./enrich/translate.ts";
 import { runAll, runSource, ensureSources } from "./collectors/index.ts";
 import { lastDigests, runDaily } from "./digest.ts";
 import { getPushSettings, passesPushFilters } from "./push.ts";
@@ -142,6 +143,12 @@ summary: e.summary ?? "",
       console.log(`[ai-review:${out.mode}] 扫描 ${out.scanned}，有结论 ${out.reviewed}，判非福利 ${out.rejected}`);
       break;
     }
+    case "translate": {
+      const limit = Number(args[0] ?? 60);
+      const out = await translatePendingItems(limit);
+      console.log(`[translate] 扫描 ${out.scanned}，翻译 ${out.translated}，失败 ${out.failed}；剩余待翻译 ${translatePendingCount()}`);
+      break;
+    }
     case "stats": {
       console.log(get("SELECT COUNT(*) AS items FROM items"));
       console.log(get("SELECT source_id, COUNT(*) AS n FROM items GROUP BY source_id"));
@@ -205,7 +212,7 @@ summary: e.summary ?? "",
     }
     default:
       console.log(
-        "usage: cli.ts <collect [sourceId...] | sources | enable <id...> | disable <id...> | config <id> <json> | reclassify | ai-review [limit] | obtain [--all] | diagnose | stats>",
+        "usage: cli.ts <collect [sourceId...] | sources | enable <id...> | disable <id...> | config <id> <json> | reclassify | ai-review [limit] | translate [limit] | obtain [--all] | diagnose | stats>",
       );
   }
 }

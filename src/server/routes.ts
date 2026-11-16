@@ -73,6 +73,7 @@ type BackfillMode,
   aiDedupClusterStats,
   runAiDedupBackfill,
 } from "./ai-admin.ts";
+import { translatePendingCount, translatePendingItems } from "./enrich/translate.ts";
 import {
   getRetention,
   itemCounts,
@@ -470,8 +471,9 @@ function buildItemsQuery(
     }
   }
   if (q.search) {
-    where.push("(title LIKE ? OR COALESCE(summary,'') LIKE ?)");
-    params.push(`%${q.search}%`, `%${q.search}%`);
+    // 英文翻译标题也参与搜索，中文关键词仍命中原文
+    where.push("(title LIKE ? OR title_en LIKE ? OR COALESCE(summary,'') LIKE ?)");
+    params.push(`%${q.search}%`, `%${q.search}%`, `%${q.search}%`);
   }
   if (q.since) {
     where.push("COALESCE(published_at, first_seen_at) >= ?");
@@ -1343,6 +1345,13 @@ const fetchLimit = Math.min(Math.max(offset + limit * 3, 240), 600);
     const body = (await c.req.json().catch(() => ({}))) as { scope?: string };
     const scope = body.scope === "all" ? "all" : "other";
     return c.json(reclassifyStoredItems(scope));
+  });
+
+  app.post("/api/ai/translate", async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+    const limit = Math.min(Math.max(Number(body.limit ?? 40), 1), 120);
+    const stats = await translatePendingItems(limit);
+    return c.json({ ...stats, pending: translatePendingCount() });
   });
 
   app.post("/api/ai/dedup", async (c) => {

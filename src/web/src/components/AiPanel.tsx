@@ -16,6 +16,7 @@ import {
   Save,
   Search,
   Filter,
+  Languages,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -113,6 +114,9 @@ export function AiPanel({
   const [reclassifying, setReclassifying] = useState(false);
   const [deduping, setDeduping] = useState(false);
   const [dedupResult, setDedupResult] = useState<{ scanned: number; merged: number; clusters: number; skippedReason?: string } | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const [translateResult, setTranslateResult] = useState<string | null>(null);
+  const [translateStats, setTranslateStats] = useState<{ pending: number } | null>(null);
   const [backfillMode, setBackfillMode] = useState<BackfillMode>("pending");
   const [backfillLimit, setBackfillLimit] = useState(200);
   const [backfill, setBackfill] = useState<{
@@ -301,6 +305,27 @@ export function AiPanel({
       onNotify?.(`Scanned ${j.scanned} "Other" items, reclassified ${j.movedFromOther} (zero tokens)`);
     } finally {
       setReclassifying(false);
+    }
+  }
+
+  async function runTranslate() {
+    setTranslating(true);
+    setTranslateResult(null);
+    try {
+      const r = await fetch("/api/ai/translate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ limit: 40 }),
+      });
+      const j = (await r.json()) as { scanned: number; translated: number; failed: number; pending: number };
+      setTranslateStats({ pending: j.pending });
+      setTranslateResult(`Translated ${j.translated} items (${j.failed} failed); ${j.pending} Chinese items still pending.`);
+      onNotify?.(`Translated ${j.translated} items`);
+      reload();
+    } catch {
+      setTranslateResult("Translation request failed");
+    } finally {
+      setTranslating(false);
     }
   }
 
@@ -769,7 +794,7 @@ When on it runs fully automatically: once when an item passes review, and again 
                     : "border-ink-200 bg-ink-100 text-ink-600")
                 }
               >
-                {form.aiDedupEnabled ? "On" : "Hidden"}
+                {form.aiDedupEnabled ? "On" : "Off"}
               </button>
               <button
                 type="button"
@@ -788,6 +813,75 @@ When on it runs fully automatically: once when an item passes review, and again 
               {dedupResult.skippedReason
                 ? dedupResult.skippedReason
                 : `Compared ${dedupResult.scanned} items, merged ${dedupResult.merged} duplicates, ${dedupResult.clusters} clusters in total.`}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-ink-200 bg-surface-hover p-3.5">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-[12.5px] font-medium text-ink-900">Translate Chinese content to English</div>
+              <div className="mt-0.5 text-[11px] leading-snug text-ink-500">
+                After an item passes AI review, its Chinese title/summary is translated via the same endpoint and stored as
+                title_en / summary_en. Only AI-kept items are translated; the original stays for search, blocking, and dedupe.
+                {translateStats ? ` Pending: ${translateStats.pending}.` : ""}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <label className="flex items-center gap-1 text-[11.5px] text-ink-600">
+                Per pass
+                <input
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={form.translatePerRun}
+                  onChange={(e) => setForm({ ...form, translatePerRun: Number(e.target.value) })}
+                  onBlur={() => void save({ translatePerRun: form.translatePerRun })}
+                  className="w-14 rounded border border-ink-200 bg-surface px-1.5 py-0.5 text-center font-mono text-[12px]"
+                />
+                items
+              </label>
+              <label className="flex min-w-0 items-center gap-1 text-[11.5px] text-ink-600" title="Dedicated model for translation (a small cheap model saves quota). Empty = main model.">
+                Model
+                <input
+                  value={form.translateModel}
+                  placeholder="main model"
+                  onChange={(e) => setForm({ ...form, translateModel: e.target.value })}
+                  onBlur={() => void save({ translateModel: form.translateModel })}
+                  className="w-44 rounded border border-ink-200 bg-surface px-1.5 py-0.5 font-mono text-[11px]"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !form.translateEnabled;
+                  setForm({ ...form, translateEnabled: next });
+                  void save({ translateEnabled: next }, next ? "Translation on" : "Translation off");
+                }}
+                className={
+                  "rounded-lg border px-3 py-1 text-[12px] font-medium transition-colors " +
+                  (form.translateEnabled
+                    ? "border-deal-border bg-deal-subtle text-deal"
+                    : "border-ink-200 bg-ink-100 text-ink-600")
+                }
+              >
+                {form.translateEnabled ? "On" : "Off"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void runTranslate()}
+                disabled={translating || !s.ready}
+                title="Translates pending AI-kept Chinese items right now"
+                className="inline-flex items-center gap-1 rounded-lg border border-ink-200 bg-surface px-2.5 py-1 text-[12px] font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-50"
+              >
+                {translating ? <Loader2 size={12} className="animate-spin" /> : <Languages size={12} />}
+                Translate now
+              </button>
+            </div>
+          </div>
+          {translateResult && (
+            <div className="mt-1 text-[11.5px] text-ink-600">
+              {translateResult}
             </div>
           )}
         </div>

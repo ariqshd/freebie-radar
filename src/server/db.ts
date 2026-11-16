@@ -468,6 +468,13 @@ const MIGRATIONS: string[] = [
           OR title LIKE '%转租%' OR title LIKE '%租房%' OR title LIKE '%合租%'
           OR title LIKE '%记者%' OR title LIKE '%发布会%' OR title LIKE '%峰会%');
   `,
+  /* v30：中文标题/摘要的英文翻译（title_en / summary_en），AI 审核通过后自动回填 */
+  `
+  ALTER TABLE items ADD COLUMN title_en TEXT;
+  ALTER TABLE items ADD COLUMN summary_en TEXT;
+  CREATE INDEX IF NOT EXISTS idx_items_translate_pending ON items(status, ai_keep, last_seen_at DESC)
+    WHERE ai_keep = 1 AND title_en IS NULL;
+  `,
 ];
 
 export function dbPath(): string {

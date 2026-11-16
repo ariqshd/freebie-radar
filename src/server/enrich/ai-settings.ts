@@ -63,6 +63,12 @@ export type AiSettings = {
   aiDedupEnabled: boolean;
   /** AI 语义去重对比窗口（小时，6-168，默认 48） */
   aiDedupWindowHours: number;
+  /** 中文标题/摘要自动翻译成英文（写入 title_en / summary_en，仅翻译 AI 判 keep 的条目） */
+  translateEnabled: boolean;
+  /** 每轮最多翻译多少条（0-120，默认 24） */
+  translatePerRun: number;
+  /** 翻译专用模型（省额度用小模型）；留空 = 复用主模型 */
+  translateModel: string;
 };
 
 const SETTINGS_KEY = "ai";
@@ -123,6 +129,9 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   feedbackLimit: 6,
   aiDedupEnabled: true,
   aiDedupWindowHours: 48,
+  translateEnabled: true,
+  translatePerRun: 24,
+  translateModel: "@cf/meta/llama-3.1-8b-instruct-fp8",
 };
 
 function numOr(v: unknown, fallback: number, min: number, max: number): number {
@@ -171,6 +180,9 @@ function normalizeSettings(raw: Partial<AiSettings>, base: AiSettings): AiSettin
     feedbackLimit: numOr(raw.feedbackLimit, base.feedbackLimit, 1, 15),
     aiDedupEnabled: typeof raw.aiDedupEnabled === "boolean" ? raw.aiDedupEnabled : base.aiDedupEnabled,
     aiDedupWindowHours: numOr(raw.aiDedupWindowHours, base.aiDedupWindowHours, 6, 168),
+    translateEnabled: typeof raw.translateEnabled === "boolean" ? raw.translateEnabled : base.translateEnabled,
+    translatePerRun: numOr(raw.translatePerRun, base.translatePerRun, 0, 120),
+    translateModel: typeof raw.translateModel === "string" ? raw.translateModel.trim() : base.translateModel,
   };
 }
 
@@ -267,6 +279,9 @@ export function publicAiSettings(s = getAiSettings()) {
     feedbackLimit: s.feedbackLimit,
     aiDedupEnabled: s.aiDedupEnabled,
     aiDedupWindowHours: s.aiDedupWindowHours,
+    translateEnabled: s.translateEnabled,
+    translatePerRun: s.translatePerRun,
+    translateModel: s.translateModel,
     hasKey: Boolean(s.apiKey),
     keyHint: s.apiKey ? "••••" + s.apiKey.slice(-4) : "",
     ready: aiReady(s),

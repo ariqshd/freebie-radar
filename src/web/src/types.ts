@@ -4,6 +4,9 @@ export type Item = {
   external_id: string;
   url: string;
   title: string;
+  /** AI 翻译的英文标题（中文条目才有）；展示时优先用它 */
+  title_en?: string | null;
+  summary_en?: string | null;
   summary: string | null;
   author: string | null;
   category: string | null;
@@ -228,6 +231,12 @@ learnFromFeedback: boolean;
   aiDedupEnabled: boolean;
   /** 语义去重Compare window (小时) */
   aiDedupWindowHours: number;
+  /** Chinese titles/summaries auto-translated to English */
+  translateEnabled: boolean;
+  /** Max items translated per pass */
+  translatePerRun: number;
+  /** Dedicated (cheaper) model for translation; empty = main model */
+  translateModel: string;
   hasKey: boolean;
   keyHint: string;
   ready: boolean;

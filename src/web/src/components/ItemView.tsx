@@ -204,7 +204,7 @@ export function CompactRow({
               (aiRejected ? "line-through decoration-ink-300 text-ink-500" : "")
             }
           >
-            {item.title}
+            {item.title_en ?? item.title}
           </span>
           <KindBadge kind={item.kind} inline />
           {showPrice && <PriceBadge item={item} inline />}
@@ -451,11 +451,11 @@ export function ItemCard({
             (aiRejected ? "line-through decoration-ink-300 text-ink-500" : "")
           }
         >
-          {item.title}
+          {item.title_en ?? item.title}
         </h3>
 
-        {item.summary && (
-          <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-ink-600">{item.summary}</p>
+        {(item.summary_en ?? item.summary) && (
+          <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-ink-600">{item.summary_en ?? item.summary}</p>
         )}
 
         {(matched.length > 0 || codes.length > 0 || item.ai?.reason || (item.dupCount ?? 1) > 1) && (
@@ -563,7 +563,7 @@ export function ItemCard({
                     rel="noreferrer"
                     className="truncate text-ink-700 hover:text-accent hover:underline"
                   >
-                    {r.title}
+                    {r.title_en ?? r.title}
                   </a>
                 </li>
               ))}
@@ -679,7 +679,14 @@ export function ItemDetailDrawer({
             )}
           </div>
 
-          <h2 className="text-[17px] leading-snug font-semibold text-ink-950">{item.title}</h2>
+          <h2 className="text-[17px] leading-snug font-semibold text-ink-950">
+            {item.title_en ?? item.title}
+          </h2>
+          {item.title_en && (
+            <div className="mt-0.5 text-[12px] leading-snug text-ink-500" title="Original title">
+              {item.title}
+            </div>
+          )}
 
           {item.ai?.reason && (
             <div
@@ -720,10 +727,17 @@ export function ItemDetailDrawer({
             </div>
           )}
 
-          {item.summary && (
+          {(item.summary_en ?? item.summary) && (
             <div>
               <div className="mb-1 text-[12px] font-medium text-ink-500">Summary</div>
-              <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap text-ink-700">{item.summary}</p>
+              <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap text-ink-700">{item.summary_en ?? item.summary}</p>
+            </div>
+          )}
+
+          {item.summary && item.summary_en && item.summary !== item.summary_en && (
+            <div>
+              <div className="mb-1 text-[12px] font-medium text-ink-500">Original summary</div>
+              <p className="text-[12.5px] leading-relaxed whitespace-pre-wrap text-ink-500">{item.summary}</p>
             </div>
           )}
 
