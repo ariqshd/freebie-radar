@@ -32,6 +32,7 @@ import { gogCollector } from "./gog.ts";
 import { steamCollector } from "./steam.ts";
 import { cheapsharkCollector } from "./cheapshark.ts";
 import { openrouterCollector } from "./openrouter.ts";
+import { freetokeepCollector } from "./freetokeep.ts";
 import { bskyCollector } from "./bsky.ts";
 import { cctvCollector } from "./cctv.ts";
 import { cookieIngestCollector } from "./cookie.ts";
@@ -43,7 +44,7 @@ import type { Collector, RawItem, SourceSeed } from "./types.ts";
 export const COLLECTORS: Collector[] = [
   mockCollector, linuxdoCollector, v2exCollector, githubCollector, rssCollector, telegramCollector,
   gamerpowerCollector, epicCollector, gogCollector, steamCollector, cheapsharkCollector, bskyCollector, openrouterCollector, cctvCollector, cookieIngestCollector,
-  ngaCollector, biliCollector, weiboCollector,
+  ngaCollector, biliCollector, weiboCollector, freetokeepCollector,
 ];
 const BY_KIND = new Map(COLLECTORS.map((c) => [c.kind, c]));
 
@@ -97,6 +98,10 @@ export const SEEDS: SourceSeed[] = [
   { id: "gamerpower", name: "GamerPower · Free Games Aggregator", kind: "gamerpower", enabled: true, intervalSec: 900, config: { query: "type=game", limit: 60 } },
   { id: "gamerpower-loot", name: "GamerPower · Free Loot & Keys", kind: "gamerpower", enabled: true, intervalSec: 1800, config: { query: "type=loot", limit: 40 } },
   { id: "cheapshark-free", name: "CheapShark · Free & ≤$1 Games", kind: "cheapshark", enabled: true, intervalSec: 900, config: { upperPrice: 1, pageSize: 40 } },
+  { id: "freetokeep-all", name: "Free to Keep · 全平台免费领", kind: "freetokeep", enabled: true, intervalSec: 1800, config: { stores: ["steam", "epic", "gog", "prime", "ubisoft", "stove", "itch", "freetokeep"], limit: 60 } },
+  { id: "rss-game-deals-free", name: "Game Deals · Free Games", kind: "rss", enabled: true, intervalSec: 900, config: { kindHint: "freebie", categoryHint: "game", feeds: [{ id: "game-deals-free", url: "https://game-deals.app/rss/free", limit: 40, categoryHint: "game" }] } },
+  { id: "rss-epicbundle", name: "EpicBundle · Bundles & Free Keys", kind: "rss", enabled: true, intervalSec: 1800, config: { feeds: [{ id: "epicbundle", url: "https://epicbundle.com/feed/", limit: 20 }] } },
+  // GrabFreeGames（Steam 群组主页）返回的是 HTML，无 RSS 输出，已跳过；免费游戏由 freetokeep / game-deals / gamerpower / IsThereAnyDeal 覆盖。
   { id: "rss-itch-free", name: "itch.io · 100% Off Games", kind: "rss", enabled: true, intervalSec: 1800, config: { feeds: [{ id: "itch-free", url: "https://itch.io/games/on-sale.xml", limit: 25, only100Off: true }] } },
   { id: "rss-isthereanydeal", name: "IsThereAnyDeal · Giveaways", kind: "rss", enabled: true, intervalSec: 900, config: { feeds: [{ id: "itad", url: "https://isthereanydeal.com/feeds/US/giveaways.rss", limit: 30 }] } },
   { id: "rss-indiegamebundles", name: "IndieGameBundles · Free Games", kind: "rss", enabled: true, intervalSec: 1800, config: { feeds: [{ id: "indiegamebundles", url: "https://www.indiegamebundles.com/category/free/feed/", limit: 25 }] } },
